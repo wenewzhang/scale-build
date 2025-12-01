@@ -11,14 +11,19 @@ logger = logging.getLogger(__name__)
 
 def run(*args, **kwargs):
     if isinstance(args[0], list):
-        args = tuple(args[0])
+        args = tuple(args[0])     
     kwargs.setdefault('stdout', subprocess.PIPE)
     kwargs.setdefault('stderr', subprocess.PIPE)
     exception_message = kwargs.pop('exception_msg', None)
     check = kwargs.pop('check', True)
     shell = kwargs.pop('shell', False)
-    log = kwargs.pop('log', True)
+    # log = kwargs.pop('log', True)
+    log = True
     env = kwargs.pop('env', None) or os.environ
+
+    if log:
+        logger.debug("Command arguments: %s", args)  # Added line to log args   
+            
     if log:
         kwargs['stderr'] = subprocess.STDOUT
 
@@ -28,7 +33,7 @@ def run(*args, **kwargs):
     if log:
         for line in map(str.rstrip, iter(proc.stdout.readline, '')):
             logger.debug(line)
-
+ 
     stdout, stderr = proc.communicate()
 
     cp = subprocess.CompletedProcess(args, proc.returncode, stdout=stdout, stderr=stderr)

@@ -76,7 +76,7 @@ def get_image_version(vendor=None):
 
 
 def update_file_path(version=None):
-    return os.path.join(RELEASE_DIR, f'TrueNAS-SCALE-{version or get_image_version()}.update')
+    return os.path.join(RELEASE_DIR, f'TrueNAS-SCALE-{version}.update')
 
 
 def update_file_checksum_path(version=None):

@@ -8,31 +8,15 @@ identity_file_path_default: "~/.ssh/id_rsa"
 # into the build chroots, or the final system images.
 ############################################################################
 apt-repos:
-  base-url: https://apt.sys.truenas.net/
-  base-url-internal: http://apt-mirror.tn.ixsystems.net/
-  url: halfmoon/nightlies/debian/
+  base-url: http://ftp.cn.debian.org/
+  base-url-internal: http://ftp.cn.debian.org/
+  url: debian/
   distribution: trixie
   components: main
   additional:
-  - url: halfmoon/nightlies/debian-security/
+  - url: debian-security/
     distribution: trixie-security
     component: main
-  - url: halfmoon/nightlies/debian-backports/
-    distribution: trixie-backports
-    component: "main contrib non-free non-free-firmware"
-  - url: halfmoon/nightlies/debian-debug/
-    distribution: trixie-debug
-    component: main
-  - url: halfmoon/nightlies/yarn/
-    distribution: stable
-    component: main
-  - url: halfmoon/nightlies/netdata/
-    distribution: trixie
-    component: main
-  - url: halfmoon/nightlies/docker/
-    distribution: trixie
-    component: stable
-    key: keys/docker.gpg
 
 #
 # Packages which are installed into the base TrueNAS SCALE System by default

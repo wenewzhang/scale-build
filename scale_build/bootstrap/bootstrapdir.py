@@ -31,8 +31,8 @@ class BootstrapDir(CacheMixin, HashMixin):
     def debootstrap_debian(self):
         manifest = get_manifest()
         # Debootstrap needs binary format key, convert ASCII-armored to binary
-        keyring_path = os.path.join(BUILDER_DIR, 'keys/truenas.gpg')
-        binary_keyring = '/tmp/truenas-binary.gpg'
+        keyring_path = os.path.join(BUILDER_DIR, 'keys/debian-release-13.asc')
+        binary_keyring = '/tmp/debian-release-13-binary.gpg'
 
         # Convert ASCII-armored key to binary format for debootstrap
         run(['sh', '-c', f'gpg --dearmor < {keyring_path} > {binary_keyring}'])
@@ -68,13 +68,13 @@ class BootstrapDir(CacheMixin, HashMixin):
         os.makedirs(keyring_dir, exist_ok=True)
 
         # Copy TrueNAS key to chroot keyrings
-        truenas_key = os.path.join(keyring_dir, 'truenas-archive.gpg')
-        shutil.copy(os.path.join(BUILDER_DIR, 'keys/truenas.gpg'), truenas_key)
+        truenas_key = os.path.join(keyring_dir, 'debian-release-13.gpg')
+        shutil.copy(os.path.join(BUILDER_DIR, 'keys/debian-release-13.asc'), truenas_key)
 
         # Build sources.list with signed-by directives
         # Main repository
         apt_sources = [
-            'deb [signed-by=/etc/apt/keyrings/truenas-archive.gpg] '
+            'deb [signed-by=/etc/apt/keyrings/debian-release-13.gpg] '
             f'{apt_repos["url"]} {apt_repos["distribution"]} {apt_repos["components"]}'
         ]
 
@@ -93,7 +93,7 @@ class BootstrapDir(CacheMixin, HashMixin):
             else:
                 # Repo without specific key - uses TrueNAS key
                 apt_sources.append(
-                    f'deb [signed-by=/etc/apt/keyrings/truenas-archive.gpg] '
+                    f'deb [signed-by=/etc/apt/keyrings/debian-release-13.gpg] '
                     f'{repo["url"]} {repo["distribution"]} {repo["component"]}'
                 )
 
@@ -165,12 +165,13 @@ class RootfsBootstrapDir(BootstrapDir):
     def debootstrap_debian(self):
         manifest = get_manifest()
         # Debootstrap needs binary format key, convert ASCII-armored to binary
-        keyring_path = os.path.join(BUILDER_DIR, 'keys/truenas.gpg')
-        binary_keyring = '/tmp/truenas-binary.gpg'
+        keyring_path = os.path.join(BUILDER_DIR, 'keys/debian-release-13.asc')
+        binary_keyring = '/tmp/debian-release-13-binary.gpg'
 
         # Convert ASCII-armored key to binary format for debootstrap
         run(['sh', '-c', f'gpg --dearmor < {keyring_path} > {binary_keyring}'])
-
+        logger.debug('debootstrap deopts: %s ', self.deopts)
+        logger.debug('debootstrap chroot_basedir: %s ', self.chroot_basedir)
         run(
             ['debootstrap'] + self.deopts + [
                 '--foreign', '--keyring', binary_keyring,

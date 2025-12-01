@@ -132,19 +132,7 @@ MANIFEST_SCHEMA = {
                 'required': ['Package', 'Pin', 'Pin-Priority'],
             }
         },
-        'additional-packages': {
-            'type': 'array',
-            'items': {
-                'type': 'object',
-                'properties': {
-                    'name': {'type': 'string'},
-                    'comment': {'type': 'string'},
-                    'install_recommends': {'type': 'boolean'},
-                },
-                'required': ['name', 'comment', 'install_recommends'],
-                'additionalProperties': False,
-            }
-        },
+
         'iso-packages': {
             'type': 'array',
             'items': {'type': 'string'},
@@ -192,7 +180,6 @@ MANIFEST_SCHEMA = {
         'base-prune',
         'build-epoch',
         'apt_preferences',
-        'additional-packages',
         'iso-packages',
         'sources'
     ],
