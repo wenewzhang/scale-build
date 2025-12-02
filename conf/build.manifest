@@ -17,6 +17,7 @@ apt-repos:
   - url: debian-security/
     distribution: trixie-security
     component: main
+    key: keys/debian-archive-trixie-security-automatic.asc
 
 #
 # Packages which are installed into the base TrueNAS SCALE System by default

@@ -41,5 +41,6 @@ def umount_chroot_basedir():
 
 
 def clean_mounts():
-    umount_chroot_basedir()
-    umount_tmpfs_and_clean_chroot_dir()
+    pass 
+    # umount_chroot_basedir()
+    # umount_tmpfs_and_clean_chroot_dir()

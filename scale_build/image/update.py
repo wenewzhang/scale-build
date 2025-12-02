@@ -139,7 +139,7 @@ def get_apt_sources():
 
     # Main repository with TrueNAS key
     apt_sources = [
-        'deb [signed-by=/etc/apt/keyrings/truenas-archive.gpg] '
+        'deb [signed-by=/etc/apt/keyrings/debian-archive.gpg] '
         f'{apt_repos["url"]} {apt_repos["distribution"]} {apt_repos["components"]}'
     ]
 
@@ -155,7 +155,7 @@ def get_apt_sources():
         else:
             # Repo without specific key - uses TrueNAS key
             apt_sources.append(
-                f'deb [signed-by=/etc/apt/keyrings/truenas-archive.gpg] '
+                f'deb [signed-by=/etc/apt/keyrings/debian-archive.gpg] '
                 f'{repo["url"]} {repo["distribution"]} {repo["component"]}'
             )
     return apt_sources

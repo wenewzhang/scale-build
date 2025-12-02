@@ -71,6 +71,10 @@ class BootstrapDir(CacheMixin, HashMixin):
         truenas_key = os.path.join(keyring_dir, 'debian-release-13.gpg')
         shutil.copy(os.path.join(BUILDER_DIR, 'keys/debian-release-13.asc'), truenas_key)
 
+        # Copy TrueNAS key to chroot keyrings
+        debian_key = os.path.join(keyring_dir, 'debian-archive-trixie-security-automatic.gpg')
+        shutil.copy(os.path.join(BUILDER_DIR, 'keys/debian-archive-trixie-security-automatic.asc'), debian_key)
+
         # Build sources.list with signed-by directives
         # Main repository
         apt_sources = [
@@ -143,9 +147,10 @@ class BootstrapDir(CacheMixin, HashMixin):
             run(command, check=False, log=False)
 
     def clean_setup(self):
-        self.clean_mounts()
-        if os.path.exists(self.chroot_basedir):
-            shutil.rmtree(self.chroot_basedir)
+        pass
+        # self.clean_mounts()
+        # if os.path.exists(self.chroot_basedir):
+        #     shutil.rmtree(self.chroot_basedir)
 
 
 class RootfsBootstrapDir(BootstrapDir):
