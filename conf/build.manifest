@@ -352,9 +352,6 @@ iso-packages:
 # to be built
 ############################################################################
 sources:
-- name: midcli
-  repo: https://github.com/truenas/midcli
-  branch: master
 - name: grub2
   repo: https://github.com/truenas/grub2
   branch: master

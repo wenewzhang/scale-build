@@ -67,11 +67,16 @@ def build_package(package_queue, to_build, failed, in_progress, built):
                 logger.debug('Building %r package', package.name)
                 with LoggingContext(os.path.join('packages', package.name), 'w'):
                     package.delete_overlayfs()
+                    logger.debug('delete_overlayfs %r package', package.name)
                     package.setup_chroot_basedir()
+                    logger.debug('setup_chroot_basedir %r package', package.name)
                     package.make_overlayfs()
+                    logger.debug('make_overlayfs %r package', package.name)
                     with APT_LOCK:
                         package.clean_previous_packages()
                         shutil.copytree(PKG_DIR, package.dpkg_overlay_packages_path)
+                                        
+                    logger.debug('APT_LOCK %r package', package.name)    
                     package._build_impl()
             except Exception as e:
                 logger.error('Failed to build %r package', package.name)
