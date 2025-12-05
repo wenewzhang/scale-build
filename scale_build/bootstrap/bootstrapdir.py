@@ -117,7 +117,7 @@ class BootstrapDir(CacheMixin, HashMixin):
         self.after_extra_packages_installation_steps()
 
         # Put our local package up at the top of the food chain
-        apt_sources.insert(0, 'deb [trusted=yes] file:/packages /')
+        apt_sources.insert(0, 'deb [trusted=yes] file:///packages ./')
         with open(apt_sources_path, 'w') as f:
             f.write('\n'.join(apt_sources))
 
