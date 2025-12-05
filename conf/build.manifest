@@ -372,7 +372,6 @@ sources:
     - "./pull.sh"
   deoptions: nocheck
   generate_version: false
-  repo: https://github.com/truenas/py-sg3
   branch: master
 - name: smartmontools
   repo: https://github.com/truenas/smartmontools
