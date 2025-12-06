@@ -111,7 +111,7 @@ class Extension:
 class DevToolsExtension(Extension):
     def build_impl(self):
         # Make `install-dev-tools` think that this is not necessary
-        os.unlink(os.path.join(self.chroot, "usr/local/libexec/disable-rootfs-protection"))
+        # os.unlink(os.path.join(self.chroot, "usr/local/libexec/disable-rootfs-protection"))
 
         self.run(["install-dev-tools"])
 

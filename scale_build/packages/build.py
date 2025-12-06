@@ -84,18 +84,18 @@ class BuildPackageMixin:
         self.run_in_chroot(f'cd {self.package_source} && apt install -y ./*.deb', 'Failed install build deps')
 
         # Truenas package is special
-        if self.name == 'truenas':
-            os.makedirs(os.path.join(self.package_source_with_chroot, 'data'))
-            with open(os.path.join(self.package_source_with_chroot, 'data/manifest.json'), 'w') as f:
-                f.write(json.dumps({
-                    'buildtime': BUILD_TIME,
-                    'train': get_truenas_train(),
-                    'codename': get_release_code_name(),
-                    'version': VERSION,
-                }))
-            os.makedirs(os.path.join(self.package_source_with_chroot, 'etc'), exist_ok=True)
-            with open(os.path.join(self.package_source_with_chroot, 'etc/version'), 'w') as f:
-                f.write(VERSION)
+        # if self.name == 'truenas':
+        os.makedirs(os.path.join(self.package_source_with_chroot, 'data'))
+        with open(os.path.join(self.package_source_with_chroot, 'data/manifest.json'), 'w') as f:
+            f.write(json.dumps({
+                'buildtime': BUILD_TIME,
+                'train': get_truenas_train(),
+                'codename': get_release_code_name(),
+                'version': VERSION,
+            }))
+        os.makedirs(os.path.join(self.package_source_with_chroot, 'etc'), exist_ok=True)
+        with open(os.path.join(self.package_source_with_chroot, 'etc/version'), 'w') as f:
+            f.write(VERSION)
 
         for prebuild_command in self.prebuildcmd:
             self.logger.debug('Running prebuildcmd: %r', prebuild_command)

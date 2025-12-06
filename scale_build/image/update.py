@@ -35,23 +35,23 @@ def build_rootfs_image():
     version = get_version()
 
     # Generate audit rules
-    gencmd = os.path.join(CHROOT_BASEDIR, 'conf', 'audit_rules', 'privileged-rules.py')
-    priv_rule_file = os.path.join(CHROOT_BASEDIR, 'conf', 'audit_rules', '31-privileged.rules')
-    run([gencmd, '--target_dir', CHROOT_BASEDIR, '--privilege_file', priv_rule_file, '--prefix', CHROOT_BASEDIR])
+    # gencmd = os.path.join(CHROOT_BASEDIR, 'conf', 'audit_rules', 'privileged-rules.py')
+    # priv_rule_file = os.path.join(CHROOT_BASEDIR, 'conf', 'audit_rules', '31-privileged.rules')
+    # run([gencmd, '--target_dir', CHROOT_BASEDIR, '--privilege_file', priv_rule_file, '--prefix', CHROOT_BASEDIR])
     # Remove the audit file generation script
-    os.unlink(gencmd)
+    # os.unlink(gencmd)
 
     # Copy over audit plugins configuration
-    conf_plugins_dir = os.path.join(CHROOT_BASEDIR, 'conf', 'audit_plugins')
-    audit_plugins = os.path.join(CHROOT_BASEDIR, 'etc', 'audit', 'plugins.d')
-    for plugin in os.listdir(conf_plugins_dir):
-        src = os.path.join(conf_plugins_dir, plugin)
-        dst = os.path.join(audit_plugins, plugin)
-        shutil.copyfile(src, dst)
+    # conf_plugins_dir = os.path.join(CHROOT_BASEDIR, 'conf', 'audit_plugins')
+    # audit_plugins = os.path.join(CHROOT_BASEDIR, 'etc', 'audit', 'plugins.d')
+    # for plugin in os.listdir(conf_plugins_dir):
+    #     src = os.path.join(conf_plugins_dir, plugin)
+    #     dst = os.path.join(audit_plugins, plugin)
+    #     shutil.copyfile(src, dst)
 
     # Generate mtree of relevant root filesystem directories
-    mtree_file = generate_mtree(CHROOT_BASEDIR, version)
-    shutil.copyfile(mtree_file, os.path.join(CHROOT_BASEDIR, 'conf', 'rootfs.mtree'))
+    # mtree_file = generate_mtree(CHROOT_BASEDIR, version)
+    # shutil.copyfile(mtree_file, os.path.join(CHROOT_BASEDIR, 'conf', 'rootfs.mtree'))
 
     # We are going to build a nested squashfs image.
 
@@ -61,10 +61,12 @@ def build_rootfs_image():
     # This allows us to verify without ever extracting anything to disk
 
     # Create the inner image
-    run(['mksquashfs', CHROOT_BASEDIR, os.path.join(UPDATE_DIR, 'rootfs.squashfs'), '-comp', 'xz'])
+    # run(['umount', '-f', os.path.join(CHROOT_BASEDIR, 'proc')])
+    run(['mksquashfs', CHROOT_BASEDIR, os.path.join(UPDATE_DIR, 'rootfs.squashfs'), '-comp', 'xz', \
+         '-e', './tmp/tmpfs/chroot/proc', './tmp/tmpfs/chroot/sys', './tmp/tmpfs/chroot/dev'])
 
     # Build any MANIFEST information
-    build_manifest()
+    # build_manifest()
 
     # Sign the image (if enabled)
     if SIGNING_KEY and SIGNING_PASSWORD:
@@ -125,7 +127,7 @@ def install_rootfs_packages_impl():
     # Do any pruning of rootfs
     clean_rootfs()
 
-    build_extensions()
+    # build_extensions()
 
     with open(os.path.join(CHROOT_BASEDIR, 'etc/apt/sources.list'), 'w') as f:
         f.write('\n'.join(get_apt_sources()))
@@ -362,7 +364,7 @@ def clean_rootfs():
         os.path.join(CHROOT_BASEDIR, 'usr/share/doc'),
         os.path.join(CHROOT_BASEDIR, 'var/cache/apt'),
         os.path.join(CHROOT_BASEDIR, 'var/lib/apt/lists'),
-        os.path.join(CHROOT_BASEDIR, 'var/trash'),
+        # os.path.join(CHROOT_BASEDIR, 'var/trash'),
     ):
         shutil.rmtree(path)
         os.makedirs(path, exist_ok=True)

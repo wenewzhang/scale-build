@@ -14,8 +14,7 @@ RELEASE_MANIFEST = os.path.join(RELEASE_DIR, 'manifest.json')
 
 
 def get_version():
-    with open(os.path.join(CHROOT_BASEDIR, 'etc/version')) as f:
-        return f.read().strip()
+    return "zuti-0.1"
 
 
 def build_manifest():

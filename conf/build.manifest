@@ -197,8 +197,3 @@ sources:
 # External packages from various sources (GitHub releases, assets.sys.truenas.net)
 ############################################################################
 external-packages:
-  caddy:
-    deb_version: "2.10.0"
-    url_template: "https://github.com/caddyserver/caddy/releases/download/v{version}/caddy_{version}_linux_{arch}.deb"
-    post_install_commands:
-      - ["systemctl", "disable", "caddy"]

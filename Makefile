@@ -46,3 +46,7 @@ validate: check
 
 branchout: checkout
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build branchout $(args)
+del:
+	sudo rm -rf logs/
+	sudo rm -rf tmp/tmpfs/chroot/
+	sudo rm -rf venv-*
