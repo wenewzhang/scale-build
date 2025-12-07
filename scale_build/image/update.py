@@ -13,6 +13,7 @@ from scale_build.extensions import build_extensions as do_build_extensions
 from scale_build.utils.manifest import get_manifest, get_apt_repos
 from scale_build.utils.run import run
 from scale_build.utils.paths import CHROOT_BASEDIR, RELEASE_DIR, UPDATE_DIR
+from scale_build.utils.system import calculate_sha256
 
 from .bootstrap import umount_chroot_basedir
 from .manifest import build_manifest, build_release_manifest, get_version, update_file_path, update_file_checksum_path
@@ -75,7 +76,7 @@ def build_rootfs_image():
     # Create the outer image now
     update_file = update_file_path(version)
     run(['mksquashfs', UPDATE_DIR, update_file, '-noD'])
-    update_file_checksum = run(['sha256sum', update_file_path(version)], log=False).stdout.strip().split()[0]
+    update_file_checksum = calculate_sha256(update_file)
     with open(update_file_checksum_path(version), 'w') as f:
         f.write(update_file_checksum)
 
