@@ -2,7 +2,7 @@ import logging
 import os
 import pexpect
 import subprocess
-
+from scale_build.utils.environment import APT_ENV
 from scale_build.exceptions import CallError
 
 
@@ -19,10 +19,10 @@ def run(*args, **kwargs):
     shell = kwargs.pop('shell', False)
     # log = kwargs.pop('log', True)
     log = True
-    env = kwargs.pop('env', None) or os.environ
+    env = kwargs.pop('env', None) or APT_ENV
 
     if log:
-        logger.debug("Command arguments: %s", args)  # Added line to log args   
+        logger.debug("Command arguments: %s env: %s", args, env)  # Added line to log args   
             
     if log:
         kwargs['stderr'] = subprocess.STDOUT

@@ -26,6 +26,14 @@ apt-repos:
 base-packages:
 - name: openssl
   install_recommends: true
+- name: linux-libc-dev
+  install_recommends: true
+- name: linux-headers-amd64
+  install_recommends: true
+- name: linux-image-amd64
+  install_recommends: true
+- name: initramfs-tools
+  install_recommends: true
 - name: grub-pc-bin
   install_recommends: true
 - name: grub-efi-amd64-bin

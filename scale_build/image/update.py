@@ -67,7 +67,7 @@ def build_rootfs_image():
          '-e', './tmp/tmpfs/chroot/proc', './tmp/tmpfs/chroot/sys', './tmp/tmpfs/chroot/dev'])
 
     # Build any MANIFEST information
-    # build_manifest()
+    build_manifest()
 
     # Sign the image (if enabled)
     if SIGNING_KEY and SIGNING_PASSWORD:
