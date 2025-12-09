@@ -151,11 +151,9 @@ additional-packages:
 iso-packages:
 - curl
 - bzip2
-- linux-image-truenas-production-amd64
 - iproute2
 - live-boot
 - pciutils
-- python3-truenas-installer
 - udhcpc
 - vim-tiny
 # Must be the last package as installing it breaks /etc/resolv.conf in chroot
