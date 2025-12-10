@@ -152,7 +152,6 @@ iso-packages:
 - curl
 - bzip2
 - iproute2
-- live-boot
 - pciutils
 - udhcpc
 - vim-tiny

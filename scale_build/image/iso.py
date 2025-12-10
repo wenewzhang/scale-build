@@ -20,7 +20,9 @@ from scale_build.config import PRESERVE_ISO
 from .bootstrap import umount_chroot_basedir
 from .manifest import get_image_version, update_file_path
 from .utils import run_in_chroot
+import logging
 
+logger = logging.getLogger(__name__)
 
 def install_iso_packages():
     try:
@@ -40,7 +42,7 @@ def install_iso_packages_impl():
         run_in_chroot(['apt', 'install', '-y', package])
 
     # We want to make sure that truenas-installer service is enabled
-    run_in_chroot(['systemctl', 'enable', 'truenas-installer.service'])
+    # run_in_chroot(['systemctl', 'enable', 'truenas-installer.service'])
 
     # Installing systemd-resolved breaks existing resolv.conf
     os.unlink(f"{CHROOT_BASEDIR}/etc/resolv.conf")
@@ -58,6 +60,7 @@ def install_iso_packages_impl():
 
 
 def make_iso_file():
+    check_vmlinuz_exists()
     if not PRESERVE_ISO:
         for f in glob.glob(os.path.join(RELEASE_DIR, '*.iso*')):
             os.unlink(f)
@@ -84,6 +87,7 @@ def make_iso_file():
     # Copy the CD files
     run(f'rsync -aKv {CD_FILES_DIR}/ {CHROOT_BASEDIR}/', shell=True)
 
+    check_vmlinuz_exists
     # Create the CD assembly dir
     if os.path.exists(CD_DIR):
         shutil.rmtree(CD_DIR)
@@ -100,18 +104,19 @@ def make_iso_file():
     os.makedirs(os.path.join(CD_DIR, 'live'), exist_ok=True)
     shutil.move(tmp_truenas_path, os.path.join(CD_DIR, 'live/filesystem.squashfs'))
 
+    check_vmlinuz_exists
     # Copy over boot and kernel before rolling CD
     shutil.copytree(os.path.join(CHROOT_BASEDIR, 'boot'), os.path.join(CD_DIR, 'boot'))
     # Dereference /initrd.img and /vmlinuz so this ISO can be re-written to a FAT32 USB stick using Windows tools
-    shutil.copy(os.path.join(CHROOT_BASEDIR, 'initrd.img'), CD_DIR)
-    shutil.copy(os.path.join(CHROOT_BASEDIR, 'vmlinuz'), CD_DIR)
-    for f in itertools.chain(
-        glob.glob(os.path.join(CD_DIR, 'boot/initrd.img-*')),
-        glob.glob(os.path.join(CD_DIR, 'boot/vmlinuz-*')),
-    ):
-        os.unlink(f)
-
-    shutil.copy(update_file_path(), os.path.join(CD_DIR, 'TrueNAS-SCALE.update'))
+    # shutil.copy(os.path.join(CHROOT_BASEDIR, 'initrd.img'), CD_DIR)
+    # shutil.copy(os.path.join(CHROOT_BASEDIR, 'vmlinuz'), CD_DIR)
+    # for f in itertools.chain(
+    #     glob.glob(os.path.join(CD_DIR, 'boot/initrd.img-*')),
+    #     glob.glob(os.path.join(CD_DIR, 'boot/vmlinuz-*')),
+    # ):
+    #     os.unlink(f)
+    check_vmlinuz_exists
+    # shutil.copy(update_file_path(), os.path.join(CD_DIR, 'TrueNAS-SCALE.update'))
     os.makedirs(os.path.join(CHROOT_BASEDIR, RELEASE_DIR), exist_ok=True)
     os.makedirs(os.path.join(CHROOT_BASEDIR, CD_DIR), exist_ok=True)
 
@@ -170,42 +175,42 @@ def make_iso_file():
                 CD_DIR,
             ])
 
-        lo = run(['losetup', '-f'], log=False).stdout.strip()
-        run(['losetup', '-P', lo, iso])
-        try:
-            with tempfile.TemporaryDirectory() as td:
-                for i in itertools.count():
-                    try:
-                        run(['mount', f'{lo}p2', td])
-                        break
-                    except CallError:
-                        if i >= 10:
-                            raise
-                        else:
-                            # losetup --partscan instructs the kernel to scan the partition table and add separate
-                            # partition devices for each of the partitions it finds. However, this operation is
-                            # asynchronous which means losetup will return before all partition devices have been
-                            # initialized. This can result in a race condition where we try to access a partition device
-                            # before it's been initialized by the kernel.
-                            time.sleep(1)
+        # lo = run(['losetup', '-f'], log=False).stdout.strip()
+        # run(['losetup', '-P', lo, iso])
+        # try:
+        #     with tempfile.TemporaryDirectory() as td:
+        #         for i in itertools.count():
+        #             try:
+        #                 run(['mount', f'{lo}p2', td])
+        #                 break
+        #             except CallError:
+        #                 if i >= 10:
+        #                     raise
+        #                 else:
+        #                     # losetup --partscan instructs the kernel to scan the partition table and add separate
+        #                     # partition devices for each of the partitions it finds. However, this operation is
+        #                     # asynchronous which means losetup will return before all partition devices have been
+        #                     # initialized. This can result in a race condition where we try to access a partition device
+        #                     # before it's been initialized by the kernel.
+        #                     time.sleep(1)
 
-                try:
-                    grub_cfg_path = os.path.join(td, 'EFI/debian/grub.cfg')
-                    with open(grub_cfg_path) as f:
-                        grub_cfg = f.read()
+        #         try:
+        #             grub_cfg_path = os.path.join(td, 'EFI/debian/grub.cfg')
+        #             with open(grub_cfg_path) as f:
+        #                 grub_cfg = f.read()
 
-                    substr = 'source $prefix/x86_64-efi/grub.cfg'
-                    if substr not in grub_cfg:
-                        raise ValueError(f'Invalid grub.cfg:\n{grub_cfg}')
+        #             substr = 'source $prefix/x86_64-efi/grub.cfg'
+        #             if substr not in grub_cfg:
+        #                 raise ValueError(f'Invalid grub.cfg:\n{grub_cfg}')
 
-                    grub_cfg = grub_cfg.replace(substr, 'source $prefix/grub.cfg')
+        #             grub_cfg = grub_cfg.replace(substr, 'source $prefix/grub.cfg')
 
-                    with open(grub_cfg_path, 'w') as f:
-                        f.write(grub_cfg)
-                finally:
-                    run(['umount', td])
-        finally:
-            run(['losetup', '-d', lo])
+        #             with open(grub_cfg_path, 'w') as f:
+        #                 f.write(grub_cfg)
+        #         finally:
+        #             run(['umount', td])
+        # finally:
+        #     run(['losetup', '-d', lo])
     finally:
         run(['umount', '-f', os.path.join(CHROOT_BASEDIR, CD_DIR)])
         run(['umount', '-f', os.path.join(CHROOT_BASEDIR, RELEASE_DIR)])
@@ -230,3 +235,10 @@ def pruning_cd_basedir_contents():
             glob.glob(os.path.join(CHROOT_BASEDIR, 'lib/modules/*truenas/kernel/sound'))
         )
     )
+
+def check_vmlinuz_exists():
+    logger.debug('Checking if vmlinuz exists')
+    if os.path.exists(os.path.join(CHROOT_BASEDIR, 'boot/vmlinuz')):
+        logger.debug('vmlinuz exists')
+    else:
+        logger.debug('vmlinuz does not exist')
