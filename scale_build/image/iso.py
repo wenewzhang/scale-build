@@ -18,7 +18,7 @@ from scale_build.config import TRUENAS_VENDOR
 from scale_build.config import PRESERVE_ISO
 
 from .bootstrap import umount_chroot_basedir
-from .manifest import get_image_version, update_file_path
+from .manifest import get_image_version, update_file_path, get_version
 from .utils import run_in_chroot
 import logging
 
@@ -116,7 +116,7 @@ def make_iso_file():
     # ):
     #     os.unlink(f)
     check_vmlinuz_exists
-    # shutil.copy(update_file_path(), os.path.join(CD_DIR, 'TrueNAS-SCALE.update'))
+    shutil.copy(update_file_path(get_version()), os.path.join(CD_DIR, 'TrueNAS-SCALE.update'))
     os.makedirs(os.path.join(CHROOT_BASEDIR, RELEASE_DIR), exist_ok=True)
     os.makedirs(os.path.join(CHROOT_BASEDIR, CD_DIR), exist_ok=True)
 
