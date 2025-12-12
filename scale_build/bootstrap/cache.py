@@ -20,6 +20,9 @@ class CacheMixin:
 
     @property
     def cache_exists(self):
+        for p in (self.cache_file_path, self.saved_packages_file_path, self.cache_hash_file_path):
+            self.logger.debug("file:%s", p) 
+
         return all(
             os.path.exists(p) for p in (self.cache_file_path, self.saved_packages_file_path, self.cache_hash_file_path)
         )
@@ -29,11 +32,13 @@ class CacheMixin:
             lambda p: os.path.exists(p),
             (self.cache_file_path, self.saved_packages_file_path, self.cache_hash_file_path)
         ):
+            self.logger.debug('remove_cache Removing %s', path)
             os.unlink(path)
 
     def get_mirror_cache(self):
         if self.cache_exists:
             with open(self.cache_hash_file_path, 'r') as f:
+                self.logger.debug('get_mirror_cache: %s', f.read().strip())
                 return f.read().strip()
 
     def save_build_cache(self, installed_packages):
@@ -44,7 +49,9 @@ class CacheMixin:
 
     @property
     def mirror_cache_intact(self):
+        self.logger.debug("in mirror_cache_intact")
         intact = True
+        return intact
         if not self.cache_exists:
             # No hash file? Lets remove to be safe
             intact = False
@@ -54,26 +61,26 @@ class CacheMixin:
             self.logger.debug('Upstream repo changed! Removing squashfs cache to re-create.')
             intact = False
 
-        if intact:
-            self.restore_cache(self.chroot_basedir)
-            for reference_file, diff in compare_reference_files(
-                cut_nonexistent_user_group_membership=True,
-                default_homedir='/var/empty'
-            ):
-                if diff:
-                    intact = False
-                    self.logger.debug(
-                        'Reference file %r changed, removing squashfs cache to re-create with it '
-                        'having following diff:\n%s',
-                        reference_file, '\n'.join(diff)
-                    )
-                    break
+            if intact:
+                self.restore_cache(self.chroot_basedir)
+                for reference_file, diff in compare_reference_files(
+                    cut_nonexistent_user_group_membership=True,
+                    default_homedir='/var/empty'
+                ):
+                    if diff:
+                        intact = False
+                        self.logger.debug(
+                            'Reference file %r changed, removing squashfs cache to re-create with it '
+                            'having following diff:\n%s',
+                            reference_file, '\n'.join(diff)
+                        )
+                        break
 
-            # Remove the temporary restored cached directory
-            shutil.rmtree(self.chroot_basedir, ignore_errors=True)
+                # Remove the temporary restored cached directory
+                shutil.rmtree(self.chroot_basedir, ignore_errors=True)
 
-        if not intact:
-            self.remove_cache()
+            if not intact:
+                self.remove_cache()
 
         return intact
 

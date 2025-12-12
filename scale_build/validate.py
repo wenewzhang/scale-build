@@ -8,7 +8,7 @@ from truenas_install import dhs, fhs
 from .exceptions import CallError, MissingPackagesException
 from .utils.manifest import validate_manifest
 from .utils.paths import REFERENCE_FILES, REFERENCE_FILES_DIR
-
+from scale_build.utils.run import run
 
 logger = logging.getLogger(__name__)
 
@@ -69,3 +69,8 @@ def validate(system_state_flag=True, manifest_flag=True, datasets_flag=True, dat
     if data_flag:
         validate_data_dir_schema()
         logger.debug('Data directory schema Validated')
+
+def validate_chroot_dbkg_info(chroot_path):
+    info = run([
+        "chroot", chroot_path,"ls", f"{chroot_path}/var/lib/dpkg/info/", "|", "wc -l"]).stdout.strip()
+    logger.debug("Number of packages in chroot: %s", info)

@@ -27,6 +27,7 @@ def build_impl():
     for f in glob.glob(os.path.join(LOG_DIR, 'cdrom*')):
         os.unlink(f)
 
+#check file: TrueNAS-SCALE-zuti-0.1.update
     if not os.path.exists(update_file_path(get_image_version())):
         raise CallError('Missing rootfs image. Run \'make update\' first.')
 
