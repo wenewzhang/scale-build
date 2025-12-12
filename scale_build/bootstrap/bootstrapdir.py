@@ -6,7 +6,6 @@ from scale_build.clean import clean_packages
 from scale_build.utils.manifest import get_manifest, get_apt_repos
 from scale_build.utils.paths import BUILDER_DIR, CHROOT_BASEDIR, REFERENCE_FILES, REFERENCE_FILES_DIR
 from scale_build.utils.run import run
-from scale_build.validate import validate_chroot_dbkg_info
 
 from .cache import CacheMixin
 from .hash import HashMixin
@@ -112,8 +111,6 @@ class BootstrapDir(CacheMixin, HashMixin):
 
         if self.extra_packages_to_install:
             run(['chroot', self.chroot_basedir, 'apt', 'install', '-y'] + self.extra_packages_to_install)
-
-        validate_chroot_dbkg_info(self.chroot_basedir)
 
         installed_packages = self.get_packages()
         self.logger.debug('Installed packages: %r', installed_packages)
