@@ -51,7 +51,7 @@ class CacheMixin:
     def mirror_cache_intact(self):
         self.logger.debug("in mirror_cache_intact")
         intact = True
-        return intact
+        # return intact
         if not self.cache_exists:
             # No hash file? Lets remove to be safe
             intact = False
