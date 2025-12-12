@@ -155,6 +155,8 @@ iso-packages:
 - pciutils
 - udhcpc
 - vim-tiny
+- linux-image-amd64 
+- initramfs-tools
 # Must be the last package as installing it breaks /etc/resolv.conf in chroot
 - systemd-resolved
 

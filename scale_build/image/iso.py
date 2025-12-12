@@ -60,7 +60,6 @@ def install_iso_packages_impl():
 
 
 def make_iso_file():
-    check_vmlinuz_exists()
     if not PRESERVE_ISO:
         for f in glob.glob(os.path.join(RELEASE_DIR, '*.iso*')):
             os.unlink(f)
@@ -87,7 +86,6 @@ def make_iso_file():
     # Copy the CD files
     run(f'rsync -aKv {CD_FILES_DIR}/ {CHROOT_BASEDIR}/', shell=True)
 
-    check_vmlinuz_exists
     # Create the CD assembly dir
     if os.path.exists(CD_DIR):
         shutil.rmtree(CD_DIR)
@@ -104,18 +102,17 @@ def make_iso_file():
     os.makedirs(os.path.join(CD_DIR, 'live'), exist_ok=True)
     shutil.move(tmp_truenas_path, os.path.join(CD_DIR, 'live/filesystem.squashfs'))
 
-    check_vmlinuz_exists
     # Copy over boot and kernel before rolling CD
     shutil.copytree(os.path.join(CHROOT_BASEDIR, 'boot'), os.path.join(CD_DIR, 'boot'))
     # Dereference /initrd.img and /vmlinuz so this ISO can be re-written to a FAT32 USB stick using Windows tools
-    # shutil.copy(os.path.join(CHROOT_BASEDIR, 'initrd.img'), CD_DIR)
-    # shutil.copy(os.path.join(CHROOT_BASEDIR, 'vmlinuz'), CD_DIR)
-    # for f in itertools.chain(
-    #     glob.glob(os.path.join(CD_DIR, 'boot/initrd.img-*')),
-    #     glob.glob(os.path.join(CD_DIR, 'boot/vmlinuz-*')),
-    # ):
-    #     os.unlink(f)
-    check_vmlinuz_exists
+    shutil.copy(os.path.join(CHROOT_BASEDIR, 'initrd.img'), CD_DIR)
+    shutil.copy(os.path.join(CHROOT_BASEDIR, 'vmlinuz'), CD_DIR)
+    for f in itertools.chain(
+        glob.glob(os.path.join(CD_DIR, 'boot/initrd.img-*')),
+        glob.glob(os.path.join(CD_DIR, 'boot/vmlinuz-*')),
+    ):
+        os.unlink(f)
+    
     shutil.copy(update_file_path(get_version()), os.path.join(CD_DIR, 'TrueNAS-SCALE.update'))
     os.makedirs(os.path.join(CHROOT_BASEDIR, RELEASE_DIR), exist_ok=True)
     os.makedirs(os.path.join(CHROOT_BASEDIR, CD_DIR), exist_ok=True)
@@ -235,10 +232,3 @@ def pruning_cd_basedir_contents():
             glob.glob(os.path.join(CHROOT_BASEDIR, 'lib/modules/*truenas/kernel/sound'))
         )
     )
-
-def check_vmlinuz_exists():
-    logger.debug('Checking if vmlinuz exists')
-    if os.path.exists(os.path.join(CHROOT_BASEDIR, 'boot/vmlinuz')):
-        logger.debug('vmlinuz exists')
-    else:
-        logger.debug('vmlinuz does not exist')
