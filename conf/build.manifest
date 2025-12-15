@@ -157,6 +157,9 @@ iso-packages:
 - vim-tiny
 - linux-image-amd64 
 - initramfs-tools
+- live-boot
+- live-config
+- live-config-systemd
 # Must be the last package as installing it breaks /etc/resolv.conf in chroot
 - systemd-resolved
 
