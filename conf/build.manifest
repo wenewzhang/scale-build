@@ -202,7 +202,9 @@ sources:
     - "./pull.sh"
   deoptions: nocheck
   generate_version: false
-
+- name: truenas_installer
+  repo: https://github.com/truenas/truenas-installer
+  branch: master
 
 # External packages from various sources (GitHub releases, assets.sys.truenas.net)
 ############################################################################
