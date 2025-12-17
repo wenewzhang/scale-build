@@ -50,3 +50,5 @@ del:
 	sudo rm -rf logs/
 	sudo rm -rf tmp/tmpfs/chroot/
 	sudo rm -rf venv-*
+test: check
+	. ./venv-${COMMIT_HASH}/bin/activate && pytest scale_build/tests/unit/test_package_rebuild_logic.py -vs

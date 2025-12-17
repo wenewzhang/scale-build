@@ -150,6 +150,7 @@ def mock_hash_changed(hash_changed_packages: set):
     (['openzfs'], {'scst'}, False),
 ])
 def test_children_rebuild_logic(packages_to_be_rebuilt, changed_hashes_mapping, rebuild):
+    print("here")
     with patch('scale_build.packages.order.get_packages') as get_packages:
         get_packages.return_value = all_packages()
         with patch.object(Package, 'exists', return_value=True):
@@ -162,3 +163,6 @@ def test_children_rebuild_logic(packages_to_be_rebuilt, changed_hashes_mapping, 
                         assert package in to_build_packages, to_build_packages.keys()
                     else:
                         assert package not in to_build_packages, to_build_packages.keys()
+
+def test_here():
+    print("here")
