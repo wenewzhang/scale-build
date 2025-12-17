@@ -4,6 +4,7 @@
 /tmp/
 /.buildEpoch
 build/
+*__pycache__*
 identities/*
 dist/
 scale_build.egg-info/
