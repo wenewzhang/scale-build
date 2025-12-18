@@ -52,3 +52,5 @@ del:
 	sudo rm -rf venv-*
 test: check
 	. ./venv-${COMMIT_HASH}/bin/activate && pytest scale_build/tests/unit/test_package_rebuild_logic.py -vs
+testb: check
+	. ./venv-${COMMIT_HASH}/bin/activate && pytest scale_build/tests/unit/test_binary_packages.py -vs
