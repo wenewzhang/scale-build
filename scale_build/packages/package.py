@@ -17,6 +17,7 @@ from .overlay import OverlayMixin
 from .utils import (
     DEPENDS_SCRIPT_PATH, gather_build_time_dependencies, get_normalized_build_constraint_value,
     get_normalized_specified_build_constraint_value, normalize_build_depends, normalize_bin_packages_depends,
+    parse_control_file
 )
 
 
@@ -112,8 +113,9 @@ class Package(BootstrapMixin, BuildPackageMixin, BuildCleanMixin, CCacheMixin, G
             else:
                 control_file_path = self.debian_control_file_path
 
-            cp = run([DEPENDS_SCRIPT_PATH, control_file_path], log=False)
-            info = json.loads(cp.stdout)
+            # cp = run([DEPENDS_SCRIPT_PATH, control_file_path], log=False)
+            cp = parse_control_file(control_file_path)
+            info = json.loads(cp)
             self.build_depends = set(
                 normalize_build_depends(info['source_package']['build_depends'])
             ) | self.explicit_deps

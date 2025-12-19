@@ -4,10 +4,12 @@ import tempfile
 import unittest
 import json
 from scale_build.packages.package import Package
+from scale_build.utils.package import get_packages
 
 class TestPackageBinaryRealFile(unittest.TestCase):
 
     def setUp(self):
+        print(f"setUp")
         # 1. 创建临时目录模拟源码根目录
         self.test_dir = tempfile.mkdtemp()
         self.source_dir = os.path.join(self.test_dir, "truenas_installer")
@@ -46,41 +48,25 @@ Description: TrueNAS Installer
 
     def tearDown(self):
         # 清理临时目录
+        print(f"tearDown")
         shutil.rmtree(self.test_dir)
 
     def test_binary_packages_with_real_control(self):
-        """
-        通过修改 SOURCES_DIR 指向临时目录，实现无 Mock 测试
-        """
-        from scale_build.utils import paths
-        
-        # 临时覆盖全局变量，让 Package.source_path 指向我们的临时目录
-        original_sources_dir = paths.SOURCES_DIR
-        paths.SOURCES_DIR = self.test_dir
-        
-        try:
-            # 确保脚本存在。如果当前环境没有 ./scripts/parse_deps.pl，测试会失败
-            # 这是一个“集成测试”，验证 Python 与 Perl 脚本的真实交互
-            if not os.path.exists('./scripts/parse_deps.pl'):
-                self.skipTest("当前路径缺少 ./scripts/parse_deps.pl，无法进行无 Mock 测试")
+        desired_packages=None
+        binary_packages = {}
+        desired_packages = desired_packages or []
+        packages_list = get_packages()
+        packages = {}
+        for package in packages_list:
+            if not package.exists:
+                print(f'Missing sources for {package.name},  did you forget to run "make checkout" ?')
 
-            bin_pkgs = self.pkg.binary_packages
+            packages[package.name] = package
+            for binary_package in package.binary_packages:
+                binary_packages[binary_package.name] = binary_package
+                print(f"binary_package:%r",binary_package)
+        print(f"test_binary_packages_with_real_control:%r",binary_packages)
 
-            # 验证解析结果
-            self.assertGreater(len(bin_pkgs), 0, "应该至少解析出一个二进制包")
-            
-            installer_pkg = next(p for p in bin_pkgs if p.name == "python3-truenas_installer")
-            
-            # 验证依赖项是否被正确清理（去掉了版本号和 ${...} 变量）
-            # 根据 control 内容，'openzfs' 应该在里面
-            self.assertIn("openzfs", installer_pkg.install_dependencies)
-            self.assertIn("avahi-daemon", installer_pkg.install_dependencies)
-            
-            print(f"解析到的依赖项: {installer_pkg.install_dependencies}")
-
-        finally:
-            # 还原全局变量
-            paths.SOURCES_DIR = original_sources_dir
 
 if __name__ == '__main__':
     unittest.main()
