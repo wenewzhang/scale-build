@@ -202,6 +202,9 @@ sources:
     - "./pull.sh"
   deoptions: nocheck
   generate_version: false
+- name: aiohttp_rpc
+  repo: https://github.com/wenewzhang/aiohttp_rpc.git
+  branch: main    
 - name: truenas_crypto_utils
   repo: https://github.com/truenas/truenas_crypto_utils
   branch: master  
@@ -214,6 +217,12 @@ sources:
 - name: truenas_api_client
   repo: https://github.com/truenas/api_client
   branch: master
+- name: licenselib
+  repo: https://github.com/truenas/licenselib
+  branch: master
+- name: ixhardware
+  repo: https://github.com/truenas/ixhardware
+  branch: master  
 # External packages from various sources (GitHub releases, assets.sys.truenas.net)
 ############################################################################
 external-packages:

@@ -266,14 +266,14 @@ def validate_manifest():
             repo_path = url.path
 
         if hostname not in ['github.com', 'www.github.com'] or not repo_path.lower().strip('/').startswith((
-            'truenas/', 'ixsystems/'
+            'truenas/', 'wenewzhang/'
         )):
             invalid_packages.append(package['name'])
 
     if invalid_packages:
         raise CallError(
             f'{",".join(invalid_packages)!r} are using repos from unsupported git upstream. Scale-build only '
-            'accepts packages from github.com/truenas organization (To skip this for dev '
+            'accepts packages from github.com/truenas and wenewzhang organization (To skip this for dev '
             'purposes, please set "SKIP_SOURCE_REPO_VALIDATION" in your environment).'
         )
 
