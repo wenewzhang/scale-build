@@ -9,6 +9,7 @@ REPO_CHANGED=$(shell if [ -d "./venv-$(COMMIT_HASH)" ]; then git status --porcel
 BREAK_SYS_PKGS_FLAG=$(shell ${PYTHON} -m pip help install | grep -q -- '--break-system-packages' && echo "--break-system-packages" || echo "")
 
 .DEFAULT_GOAL := all
+DEST_DIR="./pip-packages"
 
 check:
 ifneq ($(REPO_CHANGED),0)
@@ -16,41 +17,50 @@ ifneq ($(REPO_CHANGED),0)
 	@rm -rf venv-*
 	@${PYTHON} -m pip install $(BREAK_SYS_PKGS_FLAG) -U virtualenv >/dev/null || { echo "Failed to install/upgrade virtualenv package"; exit 1; }
 	@${PYTHON} -m venv venv-${COMMIT_HASH} || { echo "Failed to create virutal environment"; exit 1; }
-	@{ . ./venv-${COMMIT_HASH}/bin/activate && \
-		python3 -m pip install -r requirements.txt >/dev/null 2>&1 && \
-		python3 -m pip install . >/dev/null 2>&1; } || { echo "Failed to install scale-build"; exit 1; }
 endif
 
 all: checkout packages update iso
 
+pipinstall:
+	@{ . ./venv-${COMMIT_HASH}/bin/activate && \
+		python3 -m pip install --find-links=$(DEST_DIR) -r requirements.txt >/dev/null 2>&1 && \
+		python3 -m pip install . >/dev/null 2>&1; } || { echo "Failed to install scale-build"; exit 1; }
+
+pipcache:
+	@{ . ./venv-${COMMIT_HASH}/bin/activate && \
+		if [ ! -d "$(DEST_DIR)" ]; then \
+			mkdir -p "$(DEST_DIR)"; \
+			python3 -m pip download -r requirements.txt -d "$(DEST_DIR)"; \
+		fi; }
 clean: check
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build clean
-checkout: check
+checkout: check pipcache pipinstall
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build checkout
-check_upstream_package_updates: check
+check_upstream_package_updates: check pipcache pipinstall
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build check_upstream_package_updates
-iso: check
+iso: check pipcache pipinstall
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build iso
-packages: check
+packages: check pipcache pipinstall
 ifeq ($(PACKAGES),"")
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build packages
 else
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build packages --packages ${PACKAGES}
 endif
-update: check
+update: check pipcache pipinstall
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build update
-validate_manifest: check
+validate_manifest: check pipcache pipinstall
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build validate --no-validate-system_state
-validate: check
+validate: check pipcache pipinstall
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build validate
 
-branchout: checkout
+branchout: checkout pipcache pipinstall
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build branchout $(args)
 del:
 	sudo rm -rf logs/
 	sudo rm -rf tmp/tmpfs/chroot/
 	sudo rm -rf venv-*
-test: check
+	sudo rm -rf "$(DEST_DIR)"
+test: check pipcache pipinstall
 	. ./venv-${COMMIT_HASH}/bin/activate && pytest scale_build/tests/unit/test_package_rebuild_logic.py -vs
-testb: check
+testb: check pipcache pipinstall
 	. ./venv-${COMMIT_HASH}/bin/activate && pytest scale_build/tests/unit/test_binary_packages.py -vs

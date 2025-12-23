@@ -18,8 +18,8 @@ def update_git_manifest(git_remote, git_sha, mode='a+'):
 
 def retrieve_git_remote_and_sha(path):
     return {
-        'url': get_origin_uri(path),
-        'sha': run(['git', '-C', path, 'rev-parse', '--short', 'HEAD'], log=False).stdout.strip(),
+        'url': get_origin_uri_filesystem(path),
+        'sha': get_short_sha_filesystem(path),
     }
 
 
@@ -45,10 +45,31 @@ def get_origin_uri(path):
 
 def get_origin_uri_filesystem(path):
     config_path = os.path.join(path, '.git', 'config')
-    config = configparser.ConfigParser()
+    config = configparser.ConfigParser(strict=False)
     config.read(config_path)
     return config.get('remote "origin"', 'url')
 
+def get_short_sha_filesystem(repo_path="."):
+    try:
+        git_dir = os.path.join(repo_path, '.git')
+        
+        # 1. 读取 HEAD 指向的分支
+        with open(os.path.join(git_dir, 'HEAD'), 'r') as f:
+            ref = f.read().strip()
+        
+        if ref.startswith('ref:'):
+            # 2. 如果是 ref: refs/heads/master，读取对应文件获取 SHA
+            ref_path = os.path.join(git_dir, ref.split(' ')[1])
+            with open(ref_path, 'r') as f:
+                sha = f.read().strip()
+        else:
+            # 3. 如果 HEAD 处于 detached 状态，它本身就是 SHA
+            sha = ref
+            
+        return sha[:7]  # 返回短 hash
+    except Exception:
+        return "unknown"
+    
 def push_changes(path, api_token, branch):
     url = urlparse(get_origin_uri(path))
     run(['git', '-C', path, 'push', f'https://{api_token}@{url.hostname}{url.path}', branch])

@@ -5,6 +5,7 @@
 /.buildEpoch
 build/
 *__pycache__*
+pip-packages/
 identities/*
 dist/
 scale_build.egg-info/
