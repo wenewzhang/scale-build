@@ -1,4 +1,6 @@
 import re
+import configparser
+import os
 
 from urllib.parse import urlparse
 
@@ -41,6 +43,11 @@ def create_branch(path, base_branch, new_branch):
 def get_origin_uri(path):
     return run(['git', '-C', path, 'remote', 'get-url', 'origin'], log=False).stdout.strip()
 
+def get_origin_uri_filesystem(path):
+    config_path = os.path.join(path, '.git', 'config')
+    config = configparser.ConfigParser()
+    config.read(config_path)
+    return config.get('remote "origin"', 'url')
 
 def push_changes(path, api_token, branch):
     url = urlparse(get_origin_uri(path))
@@ -53,7 +60,7 @@ def fetch_origin(path):
 
 def safe_checkout(path, branch):
     fetch_origin(path)
-    if branch_exists_in_repository(get_origin_uri(path), branch):
+    if branch_exists_in_repository(get_origin_uri_filesystem(path), branch):
         run(['git', '-C', path, 'checkout', branch])
     else:
         run(['git', '-C', path, 'checkout', '-b', branch])

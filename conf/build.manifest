@@ -8,8 +8,8 @@ identity_file_path_default: "~/.ssh/id_rsa"
 # into the build chroots, or the final system images.
 ############################################################################
 apt-repos:
-  base-url: http://ftp.cn.debian.org/
-  base-url-internal: http://ftp.cn.debian.org/
+  base-url: http://172.17.0.2:3142/ftp.cn.debian.org/
+  base-url-internal: http://172.17.0.2:3142/ftp.cn.debian.org/
   url: debian/
   distribution: trixie
   components: main
@@ -202,10 +202,18 @@ sources:
     - "./pull.sh"
   deoptions: nocheck
   generate_version: false
+- name: truenas_crypto_utils
+  repo: https://github.com/truenas/truenas_crypto_utils
+  branch: master  
+- name: truenas_connect_utils
+  repo: https://github.com/truenas/truenas_connect_utils
+  branch: master  
 - name: truenas_installer
   repo: https://github.com/truenas/truenas-installer
   branch: master
-
+- name: truenas_api_client
+  repo: https://github.com/truenas/api_client
+  branch: master
 # External packages from various sources (GitHub releases, assets.sys.truenas.net)
 ############################################################################
 external-packages:
