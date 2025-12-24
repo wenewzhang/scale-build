@@ -84,7 +84,7 @@ class BootstrapDir(CacheMixin, HashMixin):
 
         # Add additional repos
         for repo in apt_repos['additional']:
-            self.logger.debug('Adding additional repo: %r', repo['url'])
+            self.logger.debug('Adding additional repo: %r %r', repo['url'], repo['component'])
             if repo.get('key'):
                 # Copy specific key to chroot keyrings
                 key_name = os.path.basename(repo['key'])

@@ -12,11 +12,11 @@ apt-repos:
   base-url-internal: http://172.17.0.2:3142/ftp.cn.debian.org/
   url: debian/
   distribution: trixie
-  components: main
+  components: main contrib
   additional:
   - url: debian-security/
     distribution: trixie-security
-    component: main
+    component: main contrib
     key: keys/debian-archive-trixie-security-automatic.asc
 
 #
@@ -213,7 +213,7 @@ sources:
   repo: https://github.com/truenas/truenas_connect_utils
   branch: master  
 - name: truenas_installer
-  repo: https://github.com/truenas/truenas-installer
+  repo: https://github.com/wenewzhang/truenas-installer
   branch: master
 - name: truenas_api_client
   repo: https://github.com/truenas/api_client
