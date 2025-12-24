@@ -42,7 +42,7 @@ def install_iso_packages_impl():
         run_in_chroot(['apt', 'install', '-y', package])
 
     # We want to make sure that truenas-installer service is enabled
-    # run_in_chroot(['systemctl', 'enable', 'truenas-installer.service'])
+    run_in_chroot(['systemctl', 'enable', 'truenas-installer.service'])
 
     # Installing systemd-resolved breaks existing resolv.conf
     os.unlink(f"{CHROOT_BASEDIR}/etc/resolv.conf")

@@ -160,6 +160,7 @@ iso-packages:
 - live-boot
 - live-config
 - live-config-systemd
+- python3-truenas-installer
 # Must be the last package as installing it breaks /etc/resolv.conf in chroot
 - systemd-resolved
 
