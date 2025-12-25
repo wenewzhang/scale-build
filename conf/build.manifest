@@ -220,10 +220,7 @@ sources:
   branch: master
 - name: licenselib
   repo: https://github.com/truenas/licenselib
-  branch: master
-- name: ixhardware
-  repo: https://github.com/truenas/ixhardware
-  branch: master  
+  branch: masters
 # External packages from various sources (GitHub releases, assets.sys.truenas.net)
 ############################################################################
 external-packages:
