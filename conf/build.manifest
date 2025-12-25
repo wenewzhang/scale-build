@@ -220,7 +220,7 @@ sources:
   branch: master
 - name: licenselib
   repo: https://github.com/truenas/licenselib
-  branch: masters
+  branch: master
 # External packages from various sources (GitHub releases, assets.sys.truenas.net)
 ############################################################################
 external-packages:
