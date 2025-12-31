@@ -232,3 +232,38 @@ def pruning_cd_basedir_contents():
             glob.glob(os.path.join(CHROOT_BASEDIR, 'lib/modules/*truenas/kernel/sound'))
         )
     )
+
+
+
+# install sudo pacman -S mtools xorriso
+def pack_iso(iso_dir):
+    run([
+    'grub-mkrescue',
+    '-o', os.path.join(TMP_DIR, 'TrueNAS-SCALE.iso'),
+    iso_dir,
+    ])
+    logger.info('Packing %s to %s  success', iso_dir, os.path.join(TMP_DIR, 'TrueNAS-SCALE.iso'))
+
+def unpack_iso(iso_path):
+    c
+    isotmp="/mnt/iso_tmp"
+    if os.path.exists(isotmp):
+        shutil.rmtree(isotmp)
+
+    os.makedirs(isotmp, exist_ok=True)    
+
+    run([
+    'mount',
+    '-o',
+    'loop', 
+    iso_path,
+    isotmp])
+
+    run([
+    'cp',
+    '-raf',
+    isotmp,
+    os.path.join(TMP_DIR, 'iso_contents')
+    ])
+    logger.info('Unpacking %s to %s  success', iso_path, os.path.join(TMP_DIR, 'iso_contents'))
+    
