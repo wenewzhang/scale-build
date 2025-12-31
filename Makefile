@@ -6,6 +6,7 @@ COMMIT_HASH=$(shell git rev-parse --short HEAD)
 PACKAGES?=""
 ISO_DIR?=""
 ISO_PATH?=""
+UPDATE_FILE_PATH?=""
 REPO_CHANGED=$(shell if [ -d "./venv-$(COMMIT_HASH)" ]; then git status --porcelain | grep -c "scale_build/"; else echo "1"; fi)
 # Check if --break-system-packages flag is supported by pip
 BREAK_SYS_PKGS_FLAG=$(shell ${PYTHON} -m pip help install | grep -q -- '--break-system-packages' && echo "--break-system-packages" || echo "")
@@ -70,3 +71,5 @@ packiso: check pipcache pipinstall
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build packiso --packiso ${ISO_DIR}
 unpackiso: check pipcache pipinstall
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build unpackiso --unpackiso ${ISO_PATH}
+updateinstall: check pipcache pipinstall
+	. ./venv-${COMMIT_HASH}/bin/activate && scale_build updateinstall --updateinstall ${UPDATE_FILE_PATH}

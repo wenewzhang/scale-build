@@ -11,7 +11,7 @@ from .upstream_package_updates import check_upstream_package_updates
 from .epoch import check_epoch
 from .exceptions import CallError
 from .iso import build_iso
-from .image.iso import pack_iso, unpack_iso
+from .image.iso import pack_iso, unpack_iso, replace_installation_files
 from .package import build_packages
 from .preflight import preflight_check
 from .update_image import build_update_image
@@ -69,6 +69,10 @@ def main():
     packages_parser.add_argument(
         '--unpackiso', '-p', help='Specify a .iso to unpack', default=[], nargs='+'
     )       
+    packages_parser = subparsers.add_parser('updateinstall', help='Unsquash a update file & cp new installation to squashfs')
+    packages_parser.add_argument(
+        '--updateinstall', '-p', help='Specify a update to unsquash', default=[], nargs='+'
+    )      
     subparsers.add_parser('update', help='Create TrueNAS Scale update image')
     subparsers.add_parser('iso', help='Create TrueNAS Scale iso installation file')
     branchout_parser = subparsers.add_parser('branchout', help='Checkout new branch for all packages')
@@ -105,7 +109,10 @@ def main():
         pack_iso("".join(args.packiso))        
     elif args.action == 'unpackiso':
         validate()
-        unpack_iso("".join(args.unpackiso))        
+        unpack_iso("".join(args.unpackiso))     
+    elif args.action == 'updateinstall':
+        validate()
+        replace_installation_files("".join(args.updateinstall))              
     elif args.action == 'clean':
         complete_cleanup()
     elif args.action == 'validate':

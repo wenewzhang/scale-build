@@ -49,7 +49,24 @@ from .dhs import TRUENAS_DATA_HIERARCHY  # noqa
 from .fhs import TRUENAS_DATASETS  # noqa
 from .utils import getmntinfo, get_pids  # noqa
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
+
+import logging.handlers
+
+# 1. 创建 logger
+logger = logging.getLogger("zuti")
+logger.setLevel(logging.DEBUG)
+
+# 2. 创建 SysLogHandler
+# Linux 通常使用 /dev/log
+handler = logging.handlers.SysLogHandler(address='/var/log')
+
+# 3. 设置格式（系统日志通常会自动加上时间戳，所以这里可以简化）
+formatter = logging.Formatter('%(name)s[%(process)d]: %(levelname)s %(message)s')
+handler.setFormatter(formatter)
+
+# 4. 添加到 logger
+logger.addHandler(handler)
 
 BIOS_BOOT_PARTITION_GUID = "21686148-6449-6E6F-744E-656564454649"
 EFI_SYSTEM_PARTITION_GUID = "C12A7328-F81F-11D2-BA4B-00A0C93EC93B"
@@ -64,6 +81,7 @@ def write_progress(progress, message):
 
 
 def run_command(cmd, **kwargs):
+    logger.debug("Running command: %s", cmd)
     try:
         return subprocess.run(cmd, **dict(run_kw, **kwargs))
     except subprocess.CalledProcessError as e:
@@ -526,6 +544,20 @@ def main():
                         os.unlink(f"{root}/etc/machine-id")
 
                     run_command(["systemd-machine-id-setup", f"--root={root}"])
+            
+                # 确保挂载点目录存在
+                mount_points = [
+                    f"{root}/dev",
+                    f"{root}/proc",
+                    f"{root}/sys",
+                    f"{root}/boot/grub",
+                ]
+
+                for mp in mount_points:
+                    try:
+                        os.makedirs(mp, exist_ok=True)  # exist_ok=True 避免重复创建时报错
+                    except OSError as e:
+                        logger.debug("⚠️  Warning: Failed to create directory %s: %s", mp, e)
 
                 run_command(["mount", "-t", "devtmpfs", "udev", f"{root}/dev"])
                 undo.append(["umount", f"{root}/dev"])

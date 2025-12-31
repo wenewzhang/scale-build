@@ -14,6 +14,8 @@ from scale_build.exceptions import CallError
 from scale_build.utils.manifest import get_apt_repos, get_manifest
 from scale_build.utils.run import run
 from scale_build.utils.paths import CD_DIR, CD_FILES_DIR, CHROOT_BASEDIR, CONF_GRUB, PKG_DIR, RELEASE_DIR, TMP_DIR
+from scale_build.utils.paths import BUILDER_DIR
+
 from scale_build.config import TRUENAS_VENDOR
 from scale_build.config import PRESERVE_ISO
 
@@ -245,7 +247,7 @@ def pack_iso(iso_dir):
     logger.info('Packing %s to %s  success', iso_dir, os.path.join(TMP_DIR, 'TrueNAS-SCALE.iso'))
 
 def unpack_iso(iso_path):
-    c
+    logger.info('Unpacking %s', iso_path)
     isotmp="/mnt/iso_tmp"
     if os.path.exists(isotmp):
         shutil.rmtree(isotmp)
@@ -267,3 +269,29 @@ def unpack_iso(iso_path):
     ])
     logger.info('Unpacking %s to %s  success', iso_path, os.path.join(TMP_DIR, 'iso_contents'))
     
+def replace_installation_files(update_path):
+    logger.info('Replacing installation files')
+    update_dest = os.path.join(TMP_DIR, "tmpupdate")
+
+    if not os.path.exists(update_path):
+        raise RuntimeError(f"Update file {update_path} not exists")
+    
+    if os.path.exists(update_dest):
+        shutil.rmtree(update_dest)
+
+    os.makedirs(update_dest)
+    run(["unsquashfs", "-dest", update_dest, update_path])
+    
+    dest_i = os.path.join(update_dest, 'truenas_install')
+    if os.path.exists(dest_i):
+        shutil.rmtree(dest_i)
+
+    os.unlink(update_path)
+
+    shutil.copytree(
+        os.path.join(BUILDER_DIR, 'truenas_install'),
+        dest_i,
+    )
+    run(["mksquashfs", update_dest, update_path, "-comp", "xz"])
+
+    logger.info('Replacing installation files success')
