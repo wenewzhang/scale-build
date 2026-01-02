@@ -8,6 +8,9 @@ if __name__ == "__main__":
 
     call_logger()
     logger.debug("Debug message")
+    pool_name="abc"
+    logger.debug("Running command: %s", ' '.join(["zpool", "get", "-H", "-o", "value", "bootfs", pool_name]))
+
     logger.info("Application started successfully")
     logger.warning("This is a warning message")
     logger.error("An error occurred during processing")

@@ -29,11 +29,11 @@ def get_file_logger(name="zuti", log_file="/var/log/zuti.log", level=logging.INF
         handler = logging.StreamHandler(sys.stderr)
         print(f"Warning: Cannot write to {log_file}, logging to stderr instead.", file=sys.stderr)
 
-    formatter = logging.Formatter(LOG_FORMAT, datefmt='%Y-%m-%d %H:%M:%S')
+    formatter = logging.Formatter(LOG_FORMAT, datefmt='%m%d %H%M%S')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     
     return logger
 
 # 在 logger.py 末尾直接初始化一个全局实例
-logger = get_file_logger()
+logger = get_file_logger(level=logging.DEBUG)

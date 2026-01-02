@@ -63,7 +63,7 @@ def write_progress(progress, message):
 
 
 def run_command(cmd, **kwargs):
-    logger.debug("Running command: %s", ''.join(cmd))
+    logger.debug("cmd:%s", ' '.join(cmd))
     try:
         return subprocess.run(cmd, **dict(run_kw, **kwargs))
     except subprocess.CalledProcessError as e:
@@ -256,7 +256,7 @@ def precheck(old_root):
 def main():
     logger.info("Starting zuti installation...")
     input = json.loads(sys.stdin.read())
-
+    logger.info("input: %s", input)
     old_root = input.get("old_root", None)
     is_fresh_install = old_root is None
 
@@ -281,9 +281,8 @@ def main():
 
     with open(os.path.join(src, "manifest.json")) as f:
         manifest = json.load(f)
-
+       
     old_bootfs_prop = run_command(["zpool", "get", "-H", "-o", "value", "bootfs", pool_name]).stdout.strip()
-
     old_root_dataset = None
     if old_root is not None:
         for i in getmntinfo():
