@@ -239,12 +239,36 @@ def pruning_cd_basedir_contents():
 
 # install sudo pacman -S mtools xorriso
 def pack_iso(iso_dir):
-    run([
-    'grub-mkrescue',
-    '-o', os.path.join(TMP_DIR, 'TrueNAS-SCALE.iso'),
-    iso_dir,
-    ])
-    logger.info('Packing %s to %s  success', iso_dir, os.path.join(TMP_DIR, 'TrueNAS-SCALE.iso'))
+    with tempfile.NamedTemporaryFile(dir=TMP_DIR) as efi_img:
+        with tempfile.NamedTemporaryFile(suffix='.tar.gz') as f:
+            apt_repos = get_apt_repos(check_custom=True)
+            r = requests.get(
+                f'{apt_repos["url"]}dists/{apt_repos["distribution"]}/main/installer-amd64/current/images/cdrom/'
+                'debian-cd_info.tar.gz',
+                timeout=10,
+                stream=True,
+            )
+            r.raise_for_status()
+            shutil.copyfileobj(r.raw, f)
+            f.flush()
+
+            with tarfile.open(f.name) as tf:
+                shutil.copyfileobj(tf.extractfile('./grub/efi.img'), efi_img)
+
+            efi_img.flush()
+
+            run([
+            'grub-mkrescue',
+            '-o', os.path.join(TMP_DIR, 'TrueNAS-SCALE.iso'),
+            '--efi-boot-part',
+            os.path.join(
+                    TMP_DIR, os.path.relpath(efi_img.name, os.path.abspath(TMP_DIR))
+                ),
+            iso_dir
+            ])
+            logger.info("get url:%s",f'{apt_repos["url"]}dists/{apt_repos["distribution"]}/main/installer-amd64/current/images/cdrom/'
+                'debian-cd_info.tar.gz')
+            logger.info('Packing %s to %s  success', iso_dir, os.path.join(TMP_DIR, 'TrueNAS-SCALE.iso'))
 
 def unpack_iso(iso_path):
     logger.info('Unpacking %s', iso_path)
