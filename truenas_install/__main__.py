@@ -556,48 +556,48 @@ def main():
                 undo.append(["umount", f"{root}/boot/grub"])
 
                 # It will legitimately exit with code 2 if initramfs must be updated (which we'll do anyway)
-                write_progress(0.55, "Running autotune")
-                run_command(["chroot", root, "/usr/local/bin/truenas-autotune.py", "--skip-unknown"],
-                            check=False)
+                # write_progress(0.55, "Running autotune")
+                # run_command(["chroot", root, "/usr/local/bin/truenas-autotune.py", "--skip-unknown"],
+                #             check=False)
 
-                if authentication_method is not None:
-                    write_progress(0.56, "Setting up authentication")
-                    run_command(["chroot", root, "/usr/local/bin/truenas-set-authentication-method.py"],
-                                input=json.dumps(authentication_method))
+                # if authentication_method is not None:
+                #     write_progress(0.56, "Setting up authentication")
+                #     run_command(["chroot", root, "/usr/local/bin/truenas-set-authentication-method.py"],
+                #                 input=json.dumps(authentication_method))
 
-                if post_install is not None or sql is not None:
-                    write_progress(0.57, "Persisting miscellaneous configuration")
+                # if post_install is not None or sql is not None:
+                #     write_progress(0.57, "Persisting miscellaneous configuration")
 
-                    if post_install is not None:
-                        with open(f"{root}/data/post-install.json", "w") as f:
-                            json.dump(post_install, f)
+                #     if post_install is not None:
+                #         with open(f"{root}/data/post-install.json", "w") as f:
+                #             json.dump(post_install, f)
 
-                    if sql is not None:
-                        run_command(["chroot", root, "sqlite3", "/data/freenas-v1.db"], input=sql)
+                #     if sql is not None:
+                #         run_command(["chroot", root, "sqlite3", "/data/freenas-v1.db"], input=sql)
 
-                if configure_serial:
-                    write_progress(0.58, "Configuring serial port")
-                    configure_serial_port(root, os.path.join(root, "data/freenas-v1.db"))
+                # if configure_serial:
+                #     write_progress(0.58, "Configuring serial port")
+                #     configure_serial_port(root, os.path.join(root, "data/freenas-v1.db"))
 
                 # Set bootfs before running update-grub
                 run_command(["zpool", "set", f"bootfs={dataset_name}", pool_name])
 
-                write_progress(0.7, "Preparing NVDIMM configuration")
-                run_command(["chroot", root, "/usr/local/bin/truenas-nvdimm.py"])
-                write_progress(0.71, "Preparing GRUB configuration")
-                run_command(["chroot", root, "/usr/local/bin/truenas-grub.py"])
-                write_progress(0.8, "Updating initramfs")
-                cp = run_command([f"{root}/usr/local/bin/truenas-initrd.py", "-f", root], check=False)
-                if cp.returncode > 1:
-                    raise subprocess.CalledProcessError(
-                        cp.returncode, f'Failed to execute truenas-initrd: {cp.stderr}'
-                    )
+                # write_progress(0.7, "Preparing NVDIMM configuration")
+                # run_command(["chroot", root, "/usr/local/bin/truenas-nvdimm.py"])
+                # write_progress(0.71, "Preparing GRUB configuration")
+                # run_command(["chroot", root, "/usr/local/bin/truenas-grub.py"])
+                # write_progress(0.8, "Updating initramfs")
+                # cp = run_command([f"{root}/usr/local/bin/truenas-initrd.py", "-f", root], check=False)
+                # if cp.returncode > 1:
+                #     raise subprocess.CalledProcessError(
+                #         cp.returncode, f'Failed to execute truenas-initrd: {cp.stderr}'
+                #     )
                 write_progress(0.9, "Updating GRUB")
                 run_command(["chroot", root, "update-grub"])
 
                 # We would like to configure fips bit as well here
-                write_progress(0.95, "Configuring FIPS")
-                run_command(["chroot", root, "/usr/bin/configure_fips"])
+                # write_progress(0.95, "Configuring FIPS")
+                # run_command(["chroot", root, "/usr/bin/configure_fips"])
                 run_grub_install = old_root is None
                 if run_grub_install is False:
                     # We will check if current BE has a different version of grub then the new/upcoming one
