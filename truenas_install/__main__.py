@@ -593,7 +593,7 @@ def main():
                 #         cp.returncode, f'Failed to execute truenas-initrd: {cp.stderr}'
                 #     )
                 write_progress(0.9, "Updating GRUB")
-                run_command(["chroot", root, "update-grub"], env={"PATH": "/usr/sbin:/usr/bin:/sbin:/bin"})
+                run_command(["chroot", root, "sh", "-c", "PATH=/usr/sbin:/usr/bin:/sbin:/bin update-grub"])
                 write_progress(0.91, "after update-grub ")
                 logger.info("after 91...")
                 # We would like to configure fips bit as well here
