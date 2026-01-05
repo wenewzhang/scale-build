@@ -68,6 +68,7 @@ def run_command(cmd, **kwargs):
         return subprocess.run(cmd, **dict(run_kw, **kwargs))
     except subprocess.CalledProcessError as e:
         write_error(f"Command {cmd} failed with exit code {e.returncode}: {e.stderr}")
+        logger.error("Command %s \nfailed with exit code %s: %s", ' '.join(cmd), e.returncode, e.stderr)
         raise
 
 
@@ -593,7 +594,7 @@ def main():
                 #         cp.returncode, f'Failed to execute truenas-initrd: {cp.stderr}'
                 #     )
                 write_progress(0.9, "Updating GRUB")
-                run_command(["chroot", root, "sh", "-c", "PATH=/usr/sbin:/usr/bin:/sbin:/bin update-grub"])
+                run_command(["chroot", root, "/usr/bin/sh", "-c", "PATH=/usr/sbin:/usr/bin:/sbin:/bin update-grub"])
                 write_progress(0.91, "after update-grub ")
                 logger.info("after 91...")
                 # We would like to configure fips bit as well here
