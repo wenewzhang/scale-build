@@ -6,6 +6,7 @@ class SimpleWriter:
     def __init__(self, file_path: str = "/var/log/zuti.sh"):
         self.file_path = file_path
         self._ensure_directory_exists()
+        self.writeln('#!/bin/bash')
     
     def _ensure_directory_exists(self):
         """确保文件目录存在"""
