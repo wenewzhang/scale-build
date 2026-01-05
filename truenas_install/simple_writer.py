@@ -3,7 +3,7 @@ from typing import Optional, TextIO
 
 
 class SimpleWriter:
-    def __init__(self, file_path: str = "/var/log/truenas_output.txt"):
+    def __init__(self, file_path: str = "/var/log/zuti.sh"):
         self.file_path = file_path
         self._ensure_directory_exists()
     
@@ -33,7 +33,7 @@ class SimpleWriter:
             f.flush()
             f.close()
     
-    def write_line(self, text: str):
+    def writeln(self, text: str):
         """写入一行文本到文件（自动添加换行符）"""
         f = self._open_file('a')
         if f:

@@ -49,6 +49,7 @@ from .dhs import TRUENAS_DATA_HIERARCHY  # noqa
 from .fhs import TRUENAS_DATASETS  # noqa
 from .utils import getmntinfo, get_pids  # noqa
 from .logger import logger  # noqa
+from .simple_writer import writer  # noqa
 
 BIOS_BOOT_PARTITION_GUID = "21686148-6449-6E6F-744E-656564454649"
 EFI_SYSTEM_PARTITION_GUID = "C12A7328-F81F-11D2-BA4B-00A0C93EC93B"
@@ -64,6 +65,7 @@ def write_progress(progress, message):
 
 def run_command(cmd, **kwargs):
     logger.debug("cmd:%s", ' '.join(cmd))
+    writer.writeln(f"{' '.join(cmd)}")
     try:
         return subprocess.run(cmd, **dict(run_kw, **kwargs))
     except subprocess.CalledProcessError as e:
