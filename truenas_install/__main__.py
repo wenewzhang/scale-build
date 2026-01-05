@@ -594,11 +594,15 @@ def main():
                 #     )
                 write_progress(0.9, "Updating GRUB")
                 run_command(["chroot", root, "update-grub"])
-
+                write_progress(0.91, "after update-grub ")
+                logger.info("after 91...")
                 # We would like to configure fips bit as well here
                 # write_progress(0.95, "Configuring FIPS")
                 # run_command(["chroot", root, "/usr/bin/configure_fips"])
                 run_grub_install = old_root is None
+                
+                logger.debug("run_grub_install 1: %s", run_grub_install)
+
                 if run_grub_install is False:
                     # We will check if current BE has a different version of grub then the new/upcoming one
                     # and if that is the case, we want to update ESP with newer grub binaries
@@ -606,6 +610,8 @@ def main():
                     be_cp = run_command(["chroot", root, "grub-install", "--version"])
                     # We expect something like "grub-install (GRUB) 2.12-1~bpo12+1"
                     run_grub_install = cp.stdout.strip().split()[-1] != be_cp.stdout.strip().split()[-1]
+
+                logger.debug("run_grub_install 2: %s", run_grub_install)
 
                 if run_grub_install:
                     write_progress(0.96, "Installing GRUB")
@@ -693,12 +699,14 @@ def main():
                 else:
                     write_progress(0.96, "No need to update grub in ESP")
             finally:
+                logger.debug("finally!")
                 for cmd in reversed(undo):
                     run_command(cmd)
 
                 run_command(["umount", root])
-
+        logger.debug("before TRUENAS_DATASETS!")
         for entry in TRUENAS_DATASETS:
+            logger.debug("TRUENAS_DATASETS!")
             this_ds = f"{dataset_name}/{entry['name']}"
             mp = entry.get('mountpoint') or f"/{entry['name']}"
             ro = "on" if "RO" in entry["options"] else "off"
@@ -713,8 +721,10 @@ def main():
             run_command(["zfs", "set", f"mountpoint={mp}", this_ds])
             run_command(["zfs", "set", 'org.zectl:bootloader=""', this_ds])
 
+        logger.debug("before zfs set!")
         run_command(["zfs", "set", "readonly=on", dataset_name])
         run_command(["zfs", "snapshot", f"{dataset_name}@pristine"])
+        logger.debug("after zfs set! success!")
     except Exception:
         if old_bootfs_prop != "-":
             run_command(["zpool", "set", f"bootfs={old_bootfs_prop}", pool_name])
