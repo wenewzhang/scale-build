@@ -35,10 +35,8 @@ zfs create -u -o mountpoint=legacy -o canmount=noauto -o setuid=off -o devices=o
 TEMP_ROOT="/tmp/tmprfbeu5y2"
 mkdir -p $TEMP_ROOT
 
-mkdir /tmp/rootfs
-mount -t squashfs /cdrom/TrueNAS-SCALE.update /tmp/rootfs
-unsquashfs -d $TEMP_ROOT -f -da 16 -fr 16  /tmp/rootfs/rootfs.squashfs
-                       
+mount -t zfs boot-pool/ROOT/zuti-0.1 $TEMP_ROOT
+                    
 # 假设 TEMP_ROOT 已定义，例如：TEMP_ROOT="/tmp/tmprfbeu5y2"
 
 # 基础目录列表（基于 TRUENAS_DATASETS 定义）
@@ -49,7 +47,7 @@ for ds in "${sub_datasets[@]}"; do
     mkdir -p "${TEMP_ROOT}/${ds}"
 done
 
-mount -t zfs boot-pool/ROOT/zuti-0.1 $TEMP_ROOT
+
 mount -t zfs boot-pool/ROOT/zuti-0.1/audit $TEMP_ROOT/audit
 mount -t zfs boot-pool/ROOT/zuti-0.1/conf $TEMP_ROOT/conf
 mount -t zfs boot-pool/ROOT/zuti-0.1/data $TEMP_ROOT/data
@@ -60,6 +58,11 @@ mount -t zfs boot-pool/ROOT/zuti-0.1/opt $TEMP_ROOT/opt
 mount -t zfs boot-pool/ROOT/zuti-0.1/root $TEMP_ROOT/root
 mount -t zfs boot-pool/ROOT/zuti-0.1/usr $TEMP_ROOT/usr
 mount -t zfs boot-pool/ROOT/zuti-0.1/var $TEMP_ROOT/var
+
+
+mkdir /tmp/rootfs
+mount -t squashfs /cdrom/TrueNAS-SCALE.update /tmp/rootfs
+unsquashfs -d $TEMP_ROOT -f -da 16 -fr 16  /tmp/rootfs/rootfs.squashfs
 
 # --- 3. 配置文件拷贝与权限设置 ---
 cp /etc/hostid $TEMP_ROOT/etc/
