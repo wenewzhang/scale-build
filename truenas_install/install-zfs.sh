@@ -71,13 +71,13 @@ cp -r /data/. $TEMP_ROOT/data/
 # 设置特定目录权限与所有者
 chmod -R u=rwX,g=,o= $TEMP_ROOT/data
 chmod u=rwx,g=rx,o=rx $TEMP_ROOT/data
-chmod -R u=rwX,g=rx,o=rx $TEMP_ROOT/data/subsystems
-chown -R 986:986 $TEMP_ROOT/data/subsystems/vm/nvram
-chmod -R u=rwX,g=,o= $TEMP_ROOT/data/zfs
-chmod u=rwX,g=,o= $TEMP_ROOT/data/sentinels
-
 # 初始化 Machine ID
 systemd-machine-id-setup --root=$TEMP_ROOT
+
+# 确保挂载点目录存在
+mkdir -p "${TEMP_ROOT}/dev"
+mkdir -p "${TEMP_ROOT}/proc"
+mkdir -p "${TEMP_ROOT}/sys"
 
 # --- 4. 挂载内核虚拟文件系统 ---
 mount -t devtmpfs udev $TEMP_ROOT/dev
