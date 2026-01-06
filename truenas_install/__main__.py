@@ -365,6 +365,7 @@ def main():
 
                     mp = os.path.join(root, ds_path[1:])
                     os.makedirs(mp, exist_ok=True)
+                    logger.debug("Mounting %s to %s", ds_name, mp)
                     run_command(["mount", "-t", "zfs", f"{dataset_name}/{this_ds}", mp])
                     ds_info.append({"ds": ds_name, "guid": ds_guid, "fhs_entry": entry})
                     undo.append(["umount", mp])

@@ -19,16 +19,35 @@ zfs create -u -o mountpoint=legacy -o canmount=noauto -o setuid=off -o devices=o
 zfs create -u -o mountpoint=legacy -o canmount=noauto -o setuid=off -o devices=off -o exec=off -o acltype=off -o aclmode=discard boot-pool/ROOT/zuti-0.1/conf
 zfs create -u -o mountpoint=legacy -o canmount=noauto -o setuid=off -o devices=off -o exec=off -o acltype=off -o aclmode=discard -o atime=off boot-pool/ROOT/zuti-0.1/data
 zfs create -u -o mountpoint=legacy -o canmount=noauto -o setuid=off -o devices=off -o exec=off -o acltype=off -o aclmode=discard -o atime=off boot-pool/ROOT/zuti-0.1/mnt
-zfs create -u -o mountpoint=legacy -o canmount=noauto -o acltype=off -o aclmode=discard boot-pool/ROOT/zuti-0.1/etc
+zfs create -u -o mountpoint=legacy -o canmount=noauto -o setuid=off -o devices=off -o acltype=off -o aclmode=discard boot-pool/ROOT/zuti-0.1/etc
 zfs create -u -o mountpoint=legacy -o canmount=noauto -o setuid=off -o devices=off -o exec=off -o acltype=off -o aclmode=discard boot-pool/ROOT/zuti-0.1/home
 zfs create -u -o mountpoint=legacy -o canmount=noauto -o setuid=off -o devices=off -o exec=off -o acltype=off -o aclmode=discard boot-pool/ROOT/zuti-0.1/opt
 zfs create -u -o mountpoint=legacy -o canmount=noauto -o setuid=off -o devices=off -o exec=off -o acltype=off -o aclmode=discard boot-pool/ROOT/zuti-0.1/root
 zfs create -u -o mountpoint=legacy -o canmount=noauto -o acltype=off -o aclmode=discard -o atime=off boot-pool/ROOT/zuti-0.1/usr
 zfs create -u -o mountpoint=legacy -o canmount=noauto -o setuid=off -o devices=off -o acltype=off -o aclmode=discard -o atime=off boot-pool/ROOT/zuti-0.1/var
+zfs create -u -o mountpoint=legacy -o canmount=noauto -o setuid=off -o devices=off -o acltype=off -o aclmode=discard -o atime=off boot-pool/ROOT/zuti-0.1/var/ca-certificates
+zfs create -u -o mountpoint=legacy -o canmount=noauto -o setuid=off -o devices=off -o acltype=off -o aclmode=discard -o atime=off boot-pool/ROOT/zuti-0.1/var/lib
+zfs create -u -o mountpoint=legacy -o canmount=noauto -o setuid=off -o devices=off -o acltype=off -o aclmode=discard -o atime=off boot-pool/ROOT/zuti-0.1/var/lib/incus
+zfs create -u -o mountpoint=legacy -o canmount=noauto -o setuid=off -o devices=off -o exec=off -o acltype=off -o aclmode=discard -o atime=off boot-pool/ROOT/zuti-0.1/var/log
+zfs create -u -o mountpoint=legacy -o canmount=noauto -o setuid=off -o devices=off -o exec=off -o acltype=posixacl -o aclmode=discard -o atime=off boot-pool/ROOT/zuti-0.1/var/log/journal
 
 # --- 2. 挂载数据集到临时目录 ---
 TEMP_ROOT="/tmp/tmprfbeu5y2"
 mkdir -p $TEMP_ROOT
+
+mkdir /tmp/rootfs
+mount -t squashfs /cdrom/TrueNAS-SCALE.update /tmp/rootfs
+unsquashfs -d $TEMP_ROOT -f -da 16 -fr 16  /tmp/rootfs/rootfs.squashfs
+                       
+# 假设 TEMP_ROOT 已定义，例如：TEMP_ROOT="/tmp/tmprfbeu5y2"
+
+# 基础目录列表（基于 TRUENAS_DATASETS 定义）
+sub_datasets=("audit" "conf" "data" "mnt" "etc" "home" "opt" "root" "usr" "var")
+
+for ds in "${sub_datasets[@]}"; do
+    # 创建子目录挂载点
+    mkdir -p "${TEMP_ROOT}/${ds}"
+done
 
 mount -t zfs boot-pool/ROOT/zuti-0.1 $TEMP_ROOT
 mount -t zfs boot-pool/ROOT/zuti-0.1/audit $TEMP_ROOT/audit
