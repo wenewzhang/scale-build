@@ -257,6 +257,9 @@ def pack_iso(iso_dir):
 
             efi_img.flush()
 
+            # copy the load TrueNAS-SCALE.update script for debug
+            shutil.copy(os.path.join(BUILDER_DIR, 'scripts/load-update.sh'), iso_dir)
+
             run([
             'grub-mkrescue',
             '-o', os.path.join(TMP_DIR, 'TrueNAS-SCALE.iso'),

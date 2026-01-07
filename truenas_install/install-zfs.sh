@@ -91,6 +91,7 @@ zpool set bootfs=boot-pool/ROOT/zuti-0.1 boot-pool
 # 进入 Chroot 执行 grub 更新
 # 注意：图片中显示此步骤后可能紧接着 destroy 操作，通常用于清理或回滚
 chroot $TEMP_ROOT /usr/bin/sh -c "PATH=/usr/sbin:/usr/bin:/sbin:/bin update-grub"
+#chroot $TEMP_ROOT /usr/bin/env ZPOOL_VDEV_NAME_PATH=YES PATH=/usr/sbin:/usr/bin:/sbin:/bin update-grub
 
 # 如果需要清理 (慎用，对应最后一张图的 zfs destroy)
-# zfs destroy -r boot-pool/ROOT/zuti-0.1  s
+# zfs destroy -r boot-pool/ROOT/zuti-0.1  
