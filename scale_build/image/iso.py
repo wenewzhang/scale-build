@@ -259,7 +259,7 @@ def pack_iso(iso_dir):
 
             # copy the load TrueNAS-SCALE.update script for debug
             shutil.copy(os.path.join(BUILDER_DIR, 'scripts/load-update.sh'), iso_dir)
-
+            run(["chmod", "500", f"{iso_dir}/load-update.sh"])
             run([
             'grub-mkrescue',
             '-o', os.path.join(TMP_DIR, 'TrueNAS-SCALE.iso'),
