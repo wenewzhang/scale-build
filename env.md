@@ -41,8 +41,13 @@ aptly repo add zuti-repo /data/zfs-dkms_2.3.5-2~bpo13+1_all.deb
 aptly publish -distribution trixie repo zuti-repo
 
 ```
+update Packages
+```
+aptly publish update trixie
+
+```
 
 debian linux
 ```
-wget http://192.168.3.161/repo_signing.gpg -o /etc/apt/keyrings/
-echo "deb [signed-by=/etc/apt/keyrings/repo_signing.gpg] http://192.168.3.161/ trixie main" > /etc/apt/source.list.d/local.list
+wget http://192.168.3.161/repo_signing.gpg -o /etc/apt/keyrings/repo_signing.gpg
+echo "deb [signed-by=/etc/apt/keyrings/repo_signing.gpg] http://192.168.3.161/ trixie main" > /etc/apt/sources.list.d/local.list

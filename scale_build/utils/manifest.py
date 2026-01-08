@@ -299,6 +299,7 @@ def get_apt_repos(check_custom: bool) -> dict:
     base_url = get_apt_base_url(check_custom)
     apt_repos['url'] = f'{base_url}{apt_repos["url"]}'
     for repo in apt_repos['additional']:
-        repo['url'] = f'{base_url}{repo["url"]}'
+        if not repo['url'].startswith(('http://', 'https://')):
+            repo['url'] = f'{base_url}{repo["url"]}'
 
     return apt_repos

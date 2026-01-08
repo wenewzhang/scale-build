@@ -18,7 +18,10 @@ apt-repos:
     distribution: trixie-security
     component: main contrib
     key: keys/debian-archive-trixie-security-automatic.asc
-
+  - url: http://zuti.onenas.org/
+    distribution: trixie
+    component: main
+    key: keys/repo_signing.gpg
 #
 # Packages which are installed into the base TrueNAS SCALE System by default
 # NOTE: Installed in the order listed
