@@ -177,6 +177,27 @@ iso-packages:
 # to be built
 ############################################################################
 sources:
+- name: openzfs
+  repo: https://github.com/truenas/zfs
+  batch_priority: 0
+  branch: truenas/zfs-2.4-release
+  env:
+    KVERS: "$(shell apt info linux-headers-amd64 | awk '/Source:/ { print $$2}' | sed 's/linux-//')"
+    KSRC: "/usr/src/linux-headers-amd64"
+    KOBJ: "$(KSRC)"
+  predepscmd:
+    - "cp -r contrib/debian debian"
+  deps_path: contrib/debian
+  prebuildcmd:
+    - "sh autogen.sh"
+    - "./configure"
+    - "cp contrib/debian/changelog debian/changelog"
+    - "chmod +x debian/rules"
+  buildcmd:
+    - "dpkg-buildpackage -us -uc -b"
+    - "rm ../openzfs-zfs-dkms*.deb ../openzfs-zfs-dracut*.deb"
+    - "debian/rules override_dh_binary-modules"
+  generate_version: false   
 - name: parted
   repo: https://github.com/truenas/parted
   branch: master
