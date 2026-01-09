@@ -35,7 +35,7 @@ pipcache:
 			mkdir -p "$(DEST_DIR)"; \
 			python3 -m pip download -r requirements.txt -d "$(DEST_DIR)"; \
 		fi; }
-clean: check
+clean: check pipcache pipinstall
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build clean
 checkout: check pipcache pipinstall
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build checkout
