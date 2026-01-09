@@ -26,7 +26,8 @@ class BootstrapDir(CacheMixin, HashMixin):
         try:
             self.setup_impl()
         finally:
-            self.clean_setup()
+            pass
+            # self.clean_setup()
 
     def debootstrap_debian(self):
         manifest = get_manifest()
