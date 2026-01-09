@@ -49,6 +49,8 @@ base-packages:
   install_recommends: true
 - name: ifstat
   install_recommends: true
+- name: netcat-openbsd
+  install_recommends: true  
 - name: usbutils
   # lsusb seems useful/harmless, also requested by community on forums
   install_recommends: false
