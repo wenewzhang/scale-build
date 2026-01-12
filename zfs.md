@@ -47,3 +47,5 @@ export LC_ALL=en_US.UTF-8
 dpkg-buildpackage -us -uc -b
 
 ```
+
+apt build-deps grub2
