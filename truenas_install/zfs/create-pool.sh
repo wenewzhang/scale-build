@@ -1,26 +1,26 @@
 #!/usr/bin/env bash
 
-# 严格模式
+# Strict mode
 set -euo pipefail
 
-# 帮助信息
+# Help message
 show_help() {
     cat >&2 <<EOF
-用法: $0 <磁盘设备> <类型>
+Usage: $0 <disk device> <type>
 
-类型:
-  boot  - 创建 bpool（用于 /boot，分区3）
-  root  - 创建 rpool（用于 /，分区4）
+Type:
+  boot  - Create bpool (for /boot, partition 3)
+  root  - Create rpool (for /, partition 4)
 
-磁盘设备应为 /dev/disk/by-id/... 路径。
+The disk device should be a /dev/disk/by-id/... path.
 
-示例:
+Examples:
   $0 /dev/disk/by-id/ata-WDC_... boot
   $0 /dev/disk/by-id/nvme-... root
 EOF
 }
 
-# 参数检查
+# Argument check
 if [ $# -ne 2 ]; then
     show_help
     exit 1
@@ -29,24 +29,24 @@ fi
 DISK="$1"
 TYPE="$2"
 
-# 验证类型
+# Validate type
 case "$TYPE" in
     boot|root)
         ;;
     *)
-        echo "错误: 类型必须是 'boot' 或 'root'" >&2
+        echo "Error: Type must be 'boot' or 'root'" >&2
         show_help
         exit 1
         ;;
 esac
 
-# 验证磁盘是否存在
+# Verify disk exists
 if [ ! -b "$DISK" ]; then
-    echo "错误: '$DISK' 不是一个有效的块设备" >&2
+    echo "Error: '$DISK' is not a valid block device" >&2
     exit 1
 fi
 
-# 确定分区和池名
+# Determine partition and pool name
 if [ "$TYPE" = "boot" ]; then
     POOL_NAME="bpool"
     PARTITION="${DISK}-part3"
@@ -57,28 +57,28 @@ elif [ "$TYPE" = "root" ]; then
     MOUNTPOINT="/"
 fi
 
-# 检查分区是否存在
+# Check if partition exists
 if [ ! -b "$PARTITION" ]; then
-    echo "错误: 分区 '$PARTITION' 不存在，请先分区！" >&2
-    echo "提示: 可使用 sgdisk 创建对应分区。" >&2
+    echo "Error: Partition '$PARTITION' does not exist. Please partition the disk first!" >&2
+    echo "Hint: Use sgdisk to create the required partition." >&2
     exit 1
 fi
 
-echo "即将创建 ZFS 池:"
-echo "  类型:     $TYPE"
-echo "  池名:     $POOL_NAME"
-echo "  设备:     $PARTITION"
-echo "  挂载点:   $MOUNTPOINT (在 /mnt 下)"
+echo "About to create ZFS pool:"
+echo "  Type:       $TYPE"
+echo "  Pool name:  $POOL_NAME"
+echo "  Device:     $PARTITION"
+echo "  Mountpoint: $MOUNTPOINT (under /mnt)"
 echo
 
-printf "⚠️ 此操作将初始化 ZFS 池并覆盖数据！输入 'YES' 确认: "
+printf "⚠️ This operation will initialize a ZFS pool and overwrite data! Type 'YES' to confirm: "
 read -r CONFIRM
 if [ "$CONFIRM" != "YES" ]; then
-    echo "已取消。"
+    echo "Cancelled."
     exit 1
 fi
 
-# 公共选项
+# Common options
 COMMON_OPTS=(
     -o ashift=12
     -o autotrim=on
@@ -92,9 +92,9 @@ COMMON_OPTS=(
     -R /mnt
 )
 
-# 创建池
+# Create pool
 if [ "$TYPE" = "boot" ]; then
-    # bpool 特有选项
+    # bpool-specific options
     zpool create \
         "${COMMON_OPTS[@]}" \
         -o compatibility=grub2 \
@@ -102,7 +102,7 @@ if [ "$TYPE" = "boot" ]; then
         -O devices=off \
         "$POOL_NAME" "$PARTITION"
 else
-    # rpool 特有选项
+    # rpool-specific options
     zpool create \
         "${COMMON_OPTS[@]}" \
         -O dnodesize=auto \
@@ -110,9 +110,9 @@ else
 fi
 
 if zpool list "$POOL_NAME" >/dev/null 2>&1; then
-    echo "✅ ZFS 池 '$POOL_NAME' 创建成功！"
+    echo "✅ ZFS pool '$POOL_NAME' created successfully!"
     zpool status "$POOL_NAME"
 else
-    echo "❌ 池创建失败！"
+    echo "❌ Pool creation failed!"
     exit 1
 fi
