@@ -1,59 +1,56 @@
 #!/bin/sh
-swapoff --all
-wipefs -a $DISK
-sgdisk --zap-all $DISK#!/bin/sh
 
 if [ $# -ne 1 ]; then
-    echo "用法: $0 <磁盘设备路径>" >&2
-    echo "建议使用 /dev/disk/by-id/ 路径，例如:" >&2
+    echo "Usage: $0 <disk device path>" >&2
+    echo "It is recommended to use a /dev/disk/by-id/ path, for example:" >&2
     echo "  $0 /dev/disk/by-id/ata-WDC_WD10EZEX-00WN4A0_WD-WCC6Y7FJ5LA9" >&2
     exit 1
 fi
 
 DISK="$1"
 
-# 检查是否以 /dev/disk/by-id/ 开头（可选但推荐）
+# Check if path starts with /dev/disk/by-id/ (optional but recommended)
 case "$DISK" in
     /dev/disk/by-id/*)
         # OK
         ;;
     /dev/[a-z]* | /dev/nvme[0-9]*n[0-9]* | /dev/mmcblk[0-9]*)
-        echo "警告：你使用了非 by-id 路径（$DISK）。建议改用 /dev/disk/by-id/ 以避免设备名漂移。" >&2
+        echo "Warning: You are using a non-by-id path ($DISK). It is recommended to use /dev/disk/by-id/ to avoid device name drift." >&2
         ;;
     *)
-        echo "错误：无效的设备路径格式" >&2
+        echo "Error: Invalid device path format" >&2
         exit 1
         ;;
 esac
 
-# 解析真实设备（用于提示和双重检查）
+# Resolve real device (for display and double-checking)
 REAL_DEV=$(readlink -f "$DISK" 2>/dev/null)
 
 if [ ! -b "$DISK" ]; then
-    echo "错误: '$DISK' 不是一个有效的块设备" >&2
+    echo "Error: '$DISK' is not a valid block device" >&2
     exit 1
 fi
 
-# 安全确认（显示 by-id 和实际设备）
-echo "即将擦除以下磁盘："
-echo "  By-ID 路径: $DISK"
-echo "  实际设备:  $REAL_DEV"
+# Safety confirmation (show both by-id and real device)
+echo "About to erase the following disk:"
+echo "  By-ID path: $DISK"
+echo "  Real device: $REAL_DEV"
 echo
-echo "⚠️ 此操作将永久删除所有数据！"
-printf "请输入 'YES' 确认: "
+echo "This operation will permanently delete all data!"
+printf "Please type 'YES' to confirm: "
 read -r CONFIRM
 
 if [ "$CONFIRM" != "YES" ]; then
-    echo "操作已取消。"
+    echo "Operation cancelled."
     exit 1
 fi
 
-# 执行清理
+# Perform cleanup
 swapoff --all
 wipefs -a "$DISK"
 sgdisk --zap-all "$DISK"
 
-# 可选：触发 udev 重载（某些系统需要）
+# Optional: Trigger udev reload (needed on some systems)
 udevadm settle
 
-echo "✅ 磁盘已清理完毕：$DISK ($REAL_DEV)"
+echo "Disk has been successfully wiped: $DISK ($REAL_DEV)"

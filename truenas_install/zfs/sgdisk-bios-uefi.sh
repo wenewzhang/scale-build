@@ -1,18 +1,19 @@
 #!/bin/sh
 
-# 用法检查
+# Usage check
 if [ $# -ne 2 ]; then
     cat >&2 <<EOF
-用法: $0 <模式> <磁盘设备>
+Usage: $0 <mode> <disk device>
 
-模式:
-  bios       - 创建 BIOS boot 分区 (EF02)
-  uefi       - 创建 EFI 系统分区 (EF00)
-  bootpool   - 创建 ZFS boot pool 分区 (BF01)
+Modes:
+  bios       - Create BIOS boot partition (EF02)
+  uefi       - Create EFI System Partition (EF00)
+  bootpool   - Create ZFS boot pool partition (BF01)
+  uefi-bootpool - Create both EFI System Partition (EF00) and ZFS boot pool (BF01)
 
-磁盘设备建议使用 /dev/disk/by-id/ 路径。
+It is recommended to use /dev/disk/by-id/ paths for disk devices.
 
-示例:
+Examples:
   $0 bios /dev/disk/by-id/ata-WDC_...
   $0 uefi /dev/disk/by-id/nvme-...
   $0 bootpool /dev/disk/by-id/...
@@ -23,56 +24,57 @@ fi
 MODE="$1"
 DISK="$2"
 
-# 验证磁盘路径
+# Validate disk path
 if [ ! -b "$DISK" ]; then
-    echo "错误: '$DISK' 不是一个有效的块设备" >&2
+    echo "Error: '$DISK' is not a valid block device" >&2
     exit 1
 fi
 
-# 显示实际设备（解析 by-id）
+# Show actual device (resolve by-id)
 REAL_DEV=$(readlink -f "$DISK")
-echo "目标磁盘: $DISK -> $REAL_DEV"
-echo "模式: $MODE"
+echo "Target disk: $DISK -> $REAL_DEV"
+echo "Mode: $MODE"
 
-# 确认
-printf "\n⚠️ 此操作将重新分区并破坏所有数据！输入 'YES' 确认: "
+# Confirmation
+printf "\nThis operation will repartition the disk and destroy all data! Type 'YES' to confirm: "
 read -r CONFIRM
-[ "$CONFIRM" != "YES" ] && { echo "已取消."; exit 1; }
+[ "$CONFIRM" != "YES" ] && { echo "Cancelled."; exit 1; }
 
-# 清理现有分区表（可选但推荐）
-echo "正在清理现有分区表..."
+# Clean existing partition table (optional but recommended)
+echo "Cleaning existing partition table..."
 wipefs -a "$DISK" >/dev/null 2>&1
 sgdisk --zap-all "$DISK" >/dev/null 2>&1
 
-# 根据模式分区
+# Partition according to mode
 case "$MODE" in
     bios)
-        echo "创建 BIOS boot 分区 (EF02)..."
+        echo "Creating BIOS boot partition (EF02)..."
         sgdisk -a1 -n1:24K:+1000K -t1:EF02 "$DISK"
         ;;
     uefi)
-        echo "创建 EFI 系统分区 (EF00)..."
+        echo "Creating EFI System Partition (EF00)..."
         sgdisk -n1:1M:+512M -t1:EF00 "$DISK"
         ;;
     bootpool)
-        echo "创建 ZFS boot pool 分区 (BF01)..."
+        echo "Creating ZFS boot pool partition (BF01)..."
         sgdisk -n1:0:+1G -t1:BF01 "$DISK"
         ;;
     uefi-bootpool)
+        echo "Creating EFI System Partition (EF00) and ZFS boot pool (BF01)..."
         sgdisk -n1:1M:+512M -t1:EF00 "$DISK"
         sgdisk -n2:0:+1G    -t2:BF01 "$DISK"
-        ;;        
+        ;;
     *)
-        echo "错误: 未知模式 '$MODE'。支持: bios, uefi, bootpool" >&2
+        echo "Error: Unknown mode '$MODE'. Supported modes: bios, uefi, bootpool, uefi-bootpool" >&2
         exit 1
         ;;
 esac
 
-# 检查是否成功
+# Check success
 if [ $? -eq 0 ]; then
-    echo "✅ 分区成功完成！"
+    echo "Partitioning completed successfully!"
     sgdisk -p "$DISK"
 else
-    echo "❌ 分区失败！"
+    echo "❌ Partitioning failed!"
     exit 1
 fi
