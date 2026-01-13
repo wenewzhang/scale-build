@@ -35,6 +35,8 @@ else
     echo "Skipping pmbr_boot (assuming UEFI boot)."
 fi
 
+partprobe $DISK
+
 echo " Partitioning complete on: $DISK"
 echo "  Partition 1: BIOS Boot (EF02)"
 echo "  Partition 2: EFI System Partition (EF00, 512 MiB)"
