@@ -34,4 +34,4 @@ zpool create \
     -O normalization=formD \
     -O relatime=on \
     -O canmount=off -O mountpoint=/ -R /mnt \
-    rpool ${DISK}-part4
+    rpool ${DISK}

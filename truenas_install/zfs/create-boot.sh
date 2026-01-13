@@ -37,5 +37,5 @@ zpool create \
     -O normalization=formD \
     -O relatime=on \
     -O canmount=off -O mountpoint=/boot -R /mnt \
-    bpool ${DISK}-part3
+    bpool ${DISK}
     
