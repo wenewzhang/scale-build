@@ -49,6 +49,28 @@ base-packages:
   install_recommends: true
 - name: ifstat
   install_recommends: true
+- name: zfs-dkms
+  install_recommends: true
+- name: zfs-zed
+  install_recommends: true
+- name: zfsutils-linux
+  install_recommends: true
+- name: zfs-initramfs
+  install_recommends: true
+- name: locales
+  install_recommends: true
+- name: console-setup
+  install_recommends: true
+- name: locales
+  install_recommends: true
+- name: keyboard-configuration
+  install_recommends: true
+- name: dpkg-dev
+  install_recommends: true
+- name: openssh-server
+  install_recommends: true
+- name: popularity-contest
+  install_recommends: true
 - name: usbutils
   # lsusb seems useful/harmless, also requested by community on forums
   install_recommends: false
