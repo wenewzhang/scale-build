@@ -24,7 +24,7 @@ sgdisk -Z "$DISK"
 #   Partition 3: ZFS pool partition (BF01, rest of the disk)
 sgdisk -a4096 -n1:0:+1024K -t1:EF02 -A1:set:2 "$DISK"
 sgdisk -n2:0:+524288K -t2:EF00 "$DISK"
-sgdisk -n3:0:+1G -t3:BF01 "$DISK"
+sgdisk -n3:0:+5G -t3:BF01 "$DISK"
 sgdisk -n4:0:0 -t4:BF00 "$DISK"
 # Enable the 'pmbr_boot' flag for BIOS compatibility with GPT
 read -p "Enabling MBR boot flag for BIOS compatibility(legacy BIOS boot, NOT UEFI). (y/N): " -r confirm
