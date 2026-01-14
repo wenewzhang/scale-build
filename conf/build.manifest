@@ -71,6 +71,10 @@ base-packages:
   install_recommends: true
 - name: popularity-contest
   install_recommends: true
+- name: systemd-timesyncd
+  install_recommends: true
+- name: shim-signed
+  install_recommends: true
 - name: usbutils
   # lsusb seems useful/harmless, also requested by community on forums
   install_recommends: false
