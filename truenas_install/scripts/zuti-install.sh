@@ -12,7 +12,7 @@ if [ -z "$STEP" ]; then
     echo "  3: Probe /boot path"
     echo "  4: Update Initramfs (all kernels)"
     echo "  5: Install GRUB (EFI mode)"
-    echo "  6: Install GRUB to specific disk (Requires 2 arguments: e.g., <disk> <extra_flag>)"
+    echo "  6: Install GRUB to specific disk (Requires 2 arguments: e.g.,<6> <disk>)"
     echo "  7: Update GRUB configuration"
     exit 1
 fi
@@ -35,7 +35,19 @@ case $STEP in
         update-initramfs -c -k all
         ;;
     5)
-        echo ">>> [Step 5] Installing GRUB (x86_64-efi)..."
+        echo ">>> [Step 5] Installing GRUB for UEFI (x86_64-efi)..."
+        DISK_PARAM=$2
+        
+        if [ -z "$DISK_PARAM" ]; then
+            echo "Error: Step 6 requires two parameters (e.g., $0 5 /dev/sda2)"
+            exit 1
+        fi
+        mkdosfs -F 32 -s 1 -n EFI ${DISK}
+        mkdir -p /boot/efi
+        echo /dev/disk/by-uuid/$(blkid -s UUID -o value ${DISK}) \
+        /boot/efi vfat defaults 0 0 >> /etc/fstab
+        mount /boot/efi
+        echo "UEFI has been successfully installed on: $DISK"        
         grub-install --target=x86_64-efi --efi-directory=/boot/efi \
                      --bootloader-id=debian --recheck --no-floppy
         ;;
