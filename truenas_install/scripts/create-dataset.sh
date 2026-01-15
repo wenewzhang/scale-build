@@ -9,3 +9,7 @@ zfs create -o canmount=off     rpool/var
 zfs create -o canmount=off     rpool/var/lib
 zfs create                     rpool/var/log
 zfs create                     rpool/var/spool
+
+## The /boot dataset is under the / dataset, so create rpool then bpool
+zfs create -o canmount=off -o mountpoint=none bpool/BOOT
+zfs create -o mountpoint=/boot bpool/BOOT/debian
