@@ -42,12 +42,12 @@ case $STEP in
             echo "Error: Step 6 requires two parameters (e.g., $0 5 /dev/sda2)"
             exit 1
         fi
-        mkdosfs -F 32 -s 1 -n EFI ${DISK}
+        mkdosfs -F 32 -s 1 -n EFI ${DISK_PARAM}
         mkdir -p /boot/efi
-        echo /dev/disk/by-uuid/$(blkid -s UUID -o value ${DISK}) \
+        echo /dev/disk/by-uuid/$(blkid -s UUID -o value ${DISK_PARAM}) \
         /boot/efi vfat defaults 0 0 >> /etc/fstab
         mount /boot/efi
-        echo "UEFI has been successfully installed on: $DISK"        
+        echo "UEFI has been successfully installed on: $DISK_PARAM"        
         grub-install --target=x86_64-efi --efi-directory=/boot/efi \
                      --bootloader-id=debian --recheck --no-floppy
         ;;
