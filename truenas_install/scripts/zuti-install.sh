@@ -10,8 +10,8 @@ if [ -z "$STEP" ]; then
     echo "  1: Enable ZFS boot-pool import service"
     echo "  2: Purge os-prober"
     echo "  3: Probe /boot path"
-    echo "  4: Update Initramfs (all kernels)"
-    echo "  5: Install GRUB (EFI mode)"
+    echo "  4: Install GRUB (EFI mode)"
+    echo "  5: Update Initramfs (all kernels)"
     echo "  6: Install GRUB to specific disk (Requires 2 arguments: e.g.,<6> <disk>)"
     echo "  7: Update GRUB configuration"
     exit 1
