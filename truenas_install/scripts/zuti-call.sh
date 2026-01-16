@@ -11,9 +11,10 @@ DISK="$1"
 ./zuti-install.sh 3
 
 if [ ! -d /sys/firmware/efi/efivars ]; then
-    echo "Enabling MBR boot flag for BIOS compatibility(legacy BIOS boot, NOT UEFI)"
+    echo "Installing GRUB for UEFI..."
     ./zuti-install.sh 4 ${DISK}2
 else
+    echo "Installing GRUB for BIOS..."
     ./zuti-install.sh 6 $DISK
 fi
 ./zuti-install.sh 5

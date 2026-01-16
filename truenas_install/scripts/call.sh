@@ -11,5 +11,5 @@ DISK="$1"
 ./create-root.sh ${DISK}4
 ./create-dataset.sh 
 ./sys-install.sh
-./init-guest.sh
+./init-guest.sh /mnt
 ./chroot2.sh
