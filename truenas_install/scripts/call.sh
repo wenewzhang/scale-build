@@ -9,7 +9,7 @@ DISK="$1"
 ./sgdisk-debian.sh $DISK
 ./create-boot.sh ${DISK}3
 ./create-root.sh ${DISK}4
-./create-data.sh 
+./create-dataset.sh 
 ./sys-install.sh
 ./init-guest.sh
 ./chroot2.sh
