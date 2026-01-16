@@ -31,10 +31,6 @@ case $STEP in
         grub-probe /boot
         ;;
     4)
-        echo ">>> [Step 4] Updating Initramfs for all kernels..."
-        update-initramfs -c -k all
-        ;;
-    5)
         echo ">>> [Step 5] Installing GRUB for UEFI (x86_64-efi)..."
         DISK_PARAM=$2
         
@@ -51,6 +47,10 @@ case $STEP in
         grub-install --target=x86_64-efi --efi-directory=/boot/efi \
                      --bootloader-id=debian --recheck --no-floppy
         ;;
+    5)
+        echo ">>> [Step 4] Updating Initramfs for all kernels..."
+        update-initramfs -c -k all
+        ;;        
     6)
         # Check if two additional parameters are provided for this step
         # Usage: ./script.sh 6 /dev/sda
