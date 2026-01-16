@@ -10,7 +10,7 @@ DISK="$1"
 ./zuti-install.sh 2
 ./zuti-install.sh 3
 
-if [ ! -d /sys/firmware/efi/efivars ]; then
+if [ -d /sys/firmware/efi/efivars ]; then
     echo "Installing GRUB for UEFI..."
     ./zuti-install.sh 4 ${DISK}2
 else
