@@ -26,13 +26,12 @@ sgdisk -a4096 -n1:0:+1024K -t1:EF02 -A1:set:2 "$DISK"
 sgdisk -n2:0:+524288K -t2:EF00 "$DISK"
 sgdisk -n3:0:+5G -t3:BF01 "$DISK"
 sgdisk -n4:0:0 -t4:BF00 "$DISK"
-# Enable the 'pmbr_boot' flag for BIOS compatibility with GPT
-read -p "Enabling MBR boot flag for BIOS compatibility(legacy BIOS boot, NOT UEFI). (y/N): " -r confirm
-if [[ "$confirm" =~ ^[Yy]$ ]]; then
-    echo "legacy BIOS boot, NOT UEFI"
+
+if [ ! -d /sys/firmware/efi/efivars ]; then
+    echo "Enabling MBR boot flag for BIOS compatibility(legacy BIOS boot, NOT UEFI)"
     parted -s "$DISK" disk_set pmbr_boot on
 else
-    echo "Skipping pmbr_boot (assuming UEFI boot)."
+    echo "Skipping pmbr_boot (using UEFI boot)."
 fi
 
 partprobe $DISK
