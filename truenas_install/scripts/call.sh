@@ -46,4 +46,4 @@ fi
 ./create-dataset.sh 
 ./sys-install.sh
 ./init-guest.sh /mnt
-./chroot2.sh
+./chroot3.sh

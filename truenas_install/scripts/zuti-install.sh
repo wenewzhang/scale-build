@@ -14,6 +14,7 @@ if [ -z "$STEP" ]; then
     echo "  5: Update Initramfs (all kernels)"
     echo "  6: Install GRUB to specific disk (Requires 2 arguments: e.g.,<6> <disk>)"
     echo "  7: Update GRUB configuration"
+    echo "  8: Updating /etc/fstab..."
     exit 1
 fi
 
@@ -35,7 +36,7 @@ case $STEP in
         DISK_PARAM=$2
         
         if [ -z "$DISK_PARAM" ]; then
-            echo "Error: Step 6 requires two parameters (e.g., $0 5 /dev/sda2)"
+            echo "Error: Step 4 requires two parameters (e.g., $0 4 /dev/sda2)"
             exit 1
         fi
         mkdosfs -F 32 -s 1 -n EFI ${DISK_PARAM}
@@ -49,6 +50,8 @@ case $STEP in
         ;;
     5)
         echo ">>> [Step 4] Updating Initramfs for all kernels..."
+        echo "REMAKE_INITRD=yes" > /etc/dkms/zfs.conf
+        zpool set cachefile=/etc/zfs/zpool.cache rpool
         update-initramfs -c -k all
         ;;        
     6)
@@ -66,8 +69,15 @@ case $STEP in
         ;;
     7)
         echo ">>> [Step 7] Updating GRUB configuration..."
+        echo 'GRUB_CMDLINE_LINUX="root=ZFS=rpool/ROOT/debian"' > /etc/default/grub
+        echo 'GRUB_CMDLINE_LINUX_DEFAULT="zfs_force=1"' >> /etc/default/grub
         update-grub
         ;;
+    8)
+        echo ">>> [Step 8] Updating /etc/fstab..."
+        echo "rpool/ROOT/debian / zfs defaults 0 0" >> /etc/fstab
+        echo "bpool/BOOT/debian /boot zfs defaults 0 0" >> /etc/fstab
+        ;;        
     *)
         echo "Invalid Step: $STEP. Please use a number between 1 and 7."
         exit 1
