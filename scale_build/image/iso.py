@@ -337,12 +337,11 @@ def patch_installation_files(update_path):
     run(["unsquashfs", "-dest", update_dest, update_path])
     
     dest_i = os.path.join(update_dest, 'truenas_install')
+    patch_i = os.path.join(BUILDER_DIR, 'truenas_install/zuti-logger-for-install.patch')
 
     os.unlink(update_path)
 
-    run(["patch", "-p2","-d", dest_i,"<",
-        os.path.join(BUILDER_DIR, 'truenas_install/zuti-logger-for-install.patch')]
-    )
+    run(["sh", "-c",f'patch -p2 -d {dest_i} < {patch_i}'])
 
     run(["mksquashfs", update_dest, update_path, "-comp", "xz"])
 
