@@ -275,7 +275,7 @@ def pack_iso(iso_dir):
 
 def unpack_iso(iso_path):
     logger.info('Unpacking %s', iso_path)
-    isotmp="/mnt/iso_tmp"
+    isotmp="/tmp/iso_tmp"
     if os.path.exists(isotmp):
         shutil.rmtree(isotmp)
 
@@ -321,7 +321,7 @@ def replace_installation_files(update_path):
     )
     run(["mksquashfs", update_dest, update_path, "-comp", "xz"])
 
-    logger.info('Replacing installation files success')
+    logger.info('Replacing installation files success: %s', update_path)
 
 def patch_installation_files(update_path):
     logger.info('Patching installation files')
@@ -337,7 +337,7 @@ def patch_installation_files(update_path):
     run(["unsquashfs", "-dest", update_dest, update_path])
     
     dest_i = os.path.join(update_dest, 'truenas_install')
-    patch_i = os.path.join(BUILDER_DIR, 'truenas_install/zuti-logger-for-install.patch')
+    patch_i = os.path.join(BUILDER_DIR, 'truenas_install/zuti-logger-for-installer.patch')
 
     os.unlink(update_path)
 
@@ -345,4 +345,4 @@ def patch_installation_files(update_path):
 
     run(["mksquashfs", update_dest, update_path, "-comp", "xz"])
 
-    logger.info('Patch installation files success')    
+    logger.info('Patch installation files success: %s', update_path)    
