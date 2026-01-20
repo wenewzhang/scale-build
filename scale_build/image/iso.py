@@ -324,7 +324,7 @@ def replace_installation_files(update_path):
     logger.info('Replacing installation files success')
 
 def patch_installation_files(update_path):
-    logger.info('Replacing installation files')
+    logger.info('Patching installation files')
     update_dest = os.path.join(TMP_DIR, "tmpupdate")
 
     if not os.path.exists(update_path):
@@ -340,7 +340,7 @@ def patch_installation_files(update_path):
 
     os.unlink(update_path)
 
-    run(["patch", "-p1","-d", dest_i,"<",
+    run(["patch", "-p2","-d", dest_i,"<",
         os.path.join(BUILDER_DIR, 'truenas_install/zuti-logger-for-install.patch')]
     )
 
