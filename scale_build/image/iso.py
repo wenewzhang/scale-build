@@ -340,7 +340,7 @@ def patch_installation_files(update_path):
 
     os.unlink(update_path)
 
-    run(["patch", "-p1","-d", dest_i,
+    run(["patch", "-p1","-d", dest_i,"<",
         os.path.join(BUILDER_DIR, 'truenas_install/zuti-logger-for-install.patch')]
     )
 
