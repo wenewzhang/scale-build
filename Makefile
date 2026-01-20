@@ -73,3 +73,5 @@ unpackiso: check pipcache pipinstall
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build unpackiso --unpackiso ${ISO_PATH}
 updateinstall: check pipcache pipinstall
 	. ./venv-${COMMIT_HASH}/bin/activate && scale_build updateinstall --updateinstall ${UPDATE_FILE_PATH}
+patchinstall: check pipcache pipinstall
+	. ./venv-${COMMIT_HASH}/bin/activate && scale_build patchinstall --patchinstall ${UPDATE_FILE_PATH}	

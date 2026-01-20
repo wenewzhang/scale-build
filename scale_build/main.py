@@ -73,6 +73,10 @@ def main():
     packages_parser.add_argument(
         '--updateinstall', '-p', help='Specify a update to unsquash', default=[], nargs='+'
     )      
+    packages_parser = subparsers.add_parser('patchinstall', help='Unsquash a update file & cp new installation to squashfs(Study TrueNAS)')
+    packages_parser.add_argument(
+        '--patchinstall', '-p', help='Specify a update to unsquash', default=[], nargs='+'
+    )     
     subparsers.add_parser('update', help='Create TrueNAS Scale update image')
     subparsers.add_parser('iso', help='Create TrueNAS Scale iso installation file')
     branchout_parser = subparsers.add_parser('branchout', help='Checkout new branch for all packages')
@@ -112,7 +116,10 @@ def main():
         unpack_iso("".join(args.unpackiso))     
     elif args.action == 'updateinstall':
         validate()
-        replace_installation_files("".join(args.updateinstall))              
+        replace_installation_files("".join(args.updateinstall))      
+    elif args.action == 'patchinstall':
+        validate()
+        patch_installation_files("".join(args.patchinstall))                  
     elif args.action == 'clean':
         complete_cleanup()
     elif args.action == 'validate':

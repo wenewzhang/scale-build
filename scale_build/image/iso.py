@@ -322,3 +322,28 @@ def replace_installation_files(update_path):
     run(["mksquashfs", update_dest, update_path, "-comp", "xz"])
 
     logger.info('Replacing installation files success')
+
+def patch_installation_files(update_path):
+    logger.info('Replacing installation files')
+    update_dest = os.path.join(TMP_DIR, "tmpupdate")
+
+    if not os.path.exists(update_path):
+        raise RuntimeError(f"Update file {update_path} not exists")
+    
+    if os.path.exists(update_dest):
+        shutil.rmtree(update_dest)
+
+    os.makedirs(update_dest)
+    run(["unsquashfs", "-dest", update_dest, update_path])
+    
+    dest_i = os.path.join(update_dest, 'truenas_install')
+
+    os.unlink(update_path)
+
+    run(["patch", "-p1","-d", dest_i,
+        os.path.join(BUILDER_DIR, 'truenas_install/zuti-logger-for-install.patch')]
+    )
+
+    run(["mksquashfs", update_dest, update_path, "-comp", "xz"])
+
+    logger.info('Patch installation files success')    

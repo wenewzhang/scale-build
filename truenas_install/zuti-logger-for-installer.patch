@@ -1,0 +1,166 @@
+diff --git a/truenas_install/__main__.py b/truenas_install/__main__.py
+index a5af1ef..e830bae 100644
+--- a/truenas_install/__main__.py
++++ b/truenas_install/__main__.py
+@@ -48,8 +48,8 @@ from licenselib.license import ContractType, License  # noqa
+ from .dhs import TRUENAS_DATA_HIERARCHY  # noqa
+ from .fhs import TRUENAS_DATASETS  # noqa
+ from .utils import getmntinfo, get_pids  # noqa
+-
+-logger = logging.getLogger(__name__)
++from .logger import logger  # noqa
++from .simple_writer import writer  # noqa
+ 
+ BIOS_BOOT_PARTITION_GUID = "21686148-6449-6E6F-744E-656564454649"
+ EFI_SYSTEM_PARTITION_GUID = "C12A7328-F81F-11D2-BA4B-00A0C93EC93B"
+@@ -64,6 +64,8 @@ def write_progress(progress, message):
+ 
+ 
+ def run_command(cmd, **kwargs):
++    logger.debug("cmd:%s", ' '.join(cmd))
++    writer.writeln(f"{' '.join(cmd)}")
+     try:
+         return subprocess.run(cmd, **dict(run_kw, **kwargs))
+     except subprocess.CalledProcessError as e:
+diff --git a/truenas_install/logger.py b/truenas_install/logger.py
+new file mode 100644
+index 0000000..f0d5399
+--- /dev/null
++++ b/truenas_install/logger.py
+@@ -0,0 +1,39 @@
++import logging
++import os
++import sys
++
++# 建议在 logger.py 顶层定义格式
++LOG_FORMAT = '%(asctime)s %(name)s[%(process)d]: %(levelname)s - %(message)s'
++
++def get_file_logger(name="zuti", log_file="/var/log/zuti.log", level=logging.INFO):
++    logger = logging.getLogger(name)
++    if logger.handlers:
++        return logger
++
++    logger.setLevel(level)
++    
++    # 尝试创建目录
++    log_dir = os.path.dirname(log_file)
++    try:
++        os.makedirs(log_dir, mode=0o755, exist_ok=True)
++        # 尝试创建 FileHandler
++        handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
++        # 尝试设置文件权限
++        try:
++            os.chmod(log_file, 0o644)
++        except OSError:
++            pass # 无法改权限但不影响写入，通常可忽略
++            
++    except (OSError, PermissionError):
++        # 彻底回退到 stderr
++        handler = logging.StreamHandler(sys.stderr)
++        print(f"Warning: Cannot write to {log_file}, logging to stderr instead.", file=sys.stderr)
++
++    formatter = logging.Formatter(LOG_FORMAT, datefmt='%m%d %H%M%S')
++    handler.setFormatter(formatter)
++    logger.addHandler(handler)
++    
++    return logger
++
++# 在 logger.py 末尾直接初始化一个全局实例
++logger = get_file_logger(level=logging.DEBUG)
+\ No newline at end of file
+diff --git a/truenas_install/logtest.py b/truenas_install/logtest.py
+new file mode 100644
+index 0000000..3bc9577
+--- /dev/null
++++ b/truenas_install/logtest.py
+@@ -0,0 +1,21 @@
++from logger import logger
++    # logger = get_file_logger("MyApp", "/var/log/myapp.log")
++
++def call_logger():
++    logger.info("in call_logger")
++
++if __name__ == "__main__":
++
++    call_logger()
++    logger.debug("Debug message")
++    pool_name="abc"
++    logger.debug("Running command: %s", ' '.join(["zpool", "get", "-H", "-o", "value", "bootfs", pool_name]))
++
++    logger.info("Application started successfully")
++    logger.warning("This is a warning message")
++    logger.error("An error occurred during processing")
++    logger.critical("Critical system failure!")
++
++    print(f"✅ Logs written to /var/log/myapp.log")
++    print("   View logs with: tail -f /var/log/myapp.log")
++    print("   Or: sudo cat /var/log/myapp.log")
+diff --git a/truenas_install/simple_writer.py b/truenas_install/simple_writer.py
+new file mode 100644
+index 0000000..3fc0d83
+--- /dev/null
++++ b/truenas_install/simple_writer.py
+@@ -0,0 +1,62 @@
++import os
++from typing import Optional, TextIO
++
++
++class SimpleWriter:
++    def __init__(self, file_path: str = "/var/log/zuti.sh"):
++        self.file_path = file_path
++        self._ensure_directory_exists()
++        self.writeln('#!/bin/bash')
++    
++    def _ensure_directory_exists(self):
++        """确保文件目录存在"""
++        try:
++            directory = os.path.dirname(self.file_path)
++            if directory:
++                os.makedirs(directory, mode=0o755, exist_ok=True)
++        except (OSError, PermissionError):
++            # 如果无法创建目录，静默处理
++            pass
++    
++    def _open_file(self, mode: str = 'a') -> Optional[TextIO]:
++        """安全地打开文件"""
++        try:
++            return open(self.file_path, mode, encoding='utf-8')
++        except (OSError, PermissionError):
++            # 如果无法打开文件，静默处理
++            return None
++    
++    def write(self, text: str):
++        """写入文本到文件（不自动换行）"""
++        f = self._open_file('a')
++        if f:
++            f.write(text)
++            f.flush()
++            f.close()
++    
++    def writeln(self, text: str):
++        """写入一行文本到文件（自动添加换行符）"""
++        f = self._open_file('a')
++        if f:
++            f.write(text + '\n')
++            f.flush()
++            f.close()
++    
++    def clear(self):
++        """清空文件内容"""
++        f = self._open_file('w')
++        if f:
++            f.flush()
++            f.close()
++    
++    def __enter__(self):
++        """支持上下文管理器"""
++        return self
++    
++    def __exit__(self, exc_type, exc_val, exc_tb):
++        """支持上下文管理器"""
++        pass
++
++
++# 全局实例，可以直接使用
++writer = SimpleWriter()
+\ No newline at end of file
