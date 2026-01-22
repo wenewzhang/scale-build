@@ -19,3 +19,5 @@ else
 fi
 ./zuti-install.sh 5
 ./zuti-install.sh 7
+echo 'root:root' | chpasswd
+sed -i 's|172\.17\.0\.2:3142/||g' /etc/apt/sources.list
