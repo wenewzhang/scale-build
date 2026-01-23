@@ -6,7 +6,7 @@ STEP="$2"
 if [ -z "$STEP" ]; then
     echo "Usage: $0 [disk_device] <step>"
     echo "Example: $0 /dev/sda 1"
-    echo "  1: sgdisk zgenhostid"
+    echo "  1: clean label wipefs & sgdisk --zap-all & zgenhostid..."
     echo "  2: sgdisk"
     echo "  3: create zroot"
     echo "  4: create dataset"
@@ -33,11 +33,11 @@ POOL_DEVICE="${POOL_DISK}${POOL_PART}"
 
 ID="zuti2601"
 
-
+MNT="/mnt"
 
 case $STEP in
     1)
-        echo ">>> [Step 1]  sgdisk zgenhostid..."
+        echo ">>> [Step 1]  clean label wipefs & sgdisk --zap-all & zgenhostid..."
         zgenhostid -f 0x00bab10c
         zpool labelclear -f "$POOL_DISK"
 
@@ -103,10 +103,11 @@ case $STEP in
         ;;
     9)  
         echo ">>> [Step 9] copy scripts to /mnt/tmp/"
-        mkdir -p "${RPATH}/tmp"
-        chmod +x "${RPATH}/usr/bin/dpkg"
-        chmod +x "${RPATH}/usr/bin/apt"
-        cp ztzbm* "${RPATH}/tmp/" 
+        mkdir -p "${MNT}/tmp"
+        chmod +x "${MNT}/usr/bin/dpkg"
+        chmod +x "${MNT}/usr/bin/apt"
+        cp ztzbm* "${MNT}/tmp/"
+        ;;
     *)
         echo "others"
         ;;
