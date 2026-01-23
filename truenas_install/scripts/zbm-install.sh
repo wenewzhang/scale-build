@@ -107,7 +107,7 @@ case $STEP in
         chmod +x "${MNT}/usr/bin/dpkg"
         chmod +x "${MNT}/usr/bin/apt"
         cp ztzbm* "${MNT}/tmp/"
-        cp -rf /cdrom/scripts/zbm /mnt/boot/efi/.        
+        cp -rf /cdrom/scripts/zbm /mnt/tmp/.        
         ;;
     *)
         echo "others"

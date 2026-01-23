@@ -86,13 +86,16 @@ EOF
         ;;
     11)
         echo "Module 11: Creating ZFSBootMenu backup boot entry"
-        cp /boot/efi/zbm/VMLINUZ.EFI /boot/efi/zbm/VMLINUZ-BACKUP.EFI
+        mkdir -p /boot/efi/zbm
+        cp /tmp/zbm/VMLINUZ.EFI /boot/efi/zbm/VMLINUZ-BACKUP.EFI
         efibootmgr -c -d "$BOOT_DISK" -p "$BOOT_PART" \
           -L "ZFSBootMenu (Backup)" \
           -l '\zbm\VMLINUZ-BACKUP.EFI'
         ;;
     12)
         echo "Module 12: Creating ZFSBootMenu main boot entry"
+        mkdir -p /boot/efi/zbm
+        cp /tmp/zbm/VMLINUZ.EFI /boot/efi/zbm/VMLINUZ.EFI
         efibootmgr -c -d "$BOOT_DISK" -p "$BOOT_PART" \
           -L "ZFSBootMenu" \
           -l '\zbm\VMLINUZ.EFI'
