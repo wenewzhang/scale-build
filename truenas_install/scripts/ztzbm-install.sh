@@ -21,6 +21,7 @@ if [ -z "$MODULE" ]; then
     echo "  10 - Mount efivarfs"
     echo "  11 - Create ZFSBootMenu backup boot entry"
     echo "  12 - Create ZFSBootMenu main boot entry"
+    echo "  13 - Set root password and clean APT proxy"
     exit 1
 fi
 
@@ -85,18 +86,24 @@ EOF
         ;;
     11)
         echo "Module 11: Creating ZFSBootMenu backup boot entry"
+        cp /boot/efi/zbm/VMLINUZ.EFI /boot/efi/zbm/VMLINUZ-BACKUP.EFI
         efibootmgr -c -d "$BOOT_DISK" -p "$BOOT_PART" \
           -L "ZFSBootMenu (Backup)" \
-          -l '\EFI\ZBM\VMLINUZ-BACKUP.EFI'
+          -l '\zbm\VMLINUZ-BACKUP.EFI'
         ;;
     12)
         echo "Module 12: Creating ZFSBootMenu main boot entry"
         efibootmgr -c -d "$BOOT_DISK" -p "$BOOT_PART" \
           -L "ZFSBootMenu" \
-          -l '\EFI\ZBM\VMLINUZ.EFI'
+          -l '\zbm\VMLINUZ.EFI'
+        ;;
+    13)
+        echo "Module 13: Setting root password and cleaning APT proxy"
+        echo 'root:root' | chpasswd
+        sed -i 's|172\.17\.0\.2:3142/||g' /etc/apt/sources.list
         ;;
     *)
-        echo "Error: Invalid module number. Please use 1-12."
+        echo "Error: Invalid module number. Please use 1-13."
         exit 1
         ;;
 esac
