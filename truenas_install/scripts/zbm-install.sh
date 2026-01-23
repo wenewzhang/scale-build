@@ -1,20 +1,11 @@
 #!/bin/bash
-
-# Check if exactly one argument (disk device) is provided
-if [ $# -ne 2 ]; then
-    echo "Usage: $0 <disk_device> <step>"
-    echo "Example: $0 /dev/sda 1"
-    exit 1
-fi
-
-DISK="$1"
-
+# Check if step is provided as last argument
 STEP="$2"
 
 # Basic usage check
 if [ -z "$STEP" ]; then
-    echo "Usage: $0 [1-7] [additional arguments for step 6]"
-    echo "Steps:"
+    echo "Usage: $0 [disk_device] <step>"
+    echo "Example: $0 /dev/sda 1"
     echo "  1: sgdisk zgenhostid"
     echo "  2: sgdisk"
     echo "  3: create zroot"
@@ -22,8 +13,8 @@ if [ -z "$STEP" ]; then
     echo "  5: mount show"
     echo "  6: chroot into mounted system"
     echo "  7: zpool export/import and mount datasets"
-    echo "  8: GRUB-style disk partitioning (./sgdisk-debian.sh)"
-    echo "  9: Update GRUB configuration"
+    echo "  8: install rootfs to /mnt..."
+    echo "  9: install to chroot"
     echo " 10: Updating /etc/fstab..."
     exit 1
 fi
@@ -31,6 +22,7 @@ fi
 swapoff --all
 udevadm settle
 
+# Set disk device if provided (for steps that need it)
 BOOT_DISK="$1"
 BOOT_PART="2"
 BOOT_DEVICE="${BOOT_DISK}${BOOT_PART}"
@@ -57,7 +49,7 @@ case $STEP in
         ;;
     2)
         echo ">>> [Step 2] sgdisk..."
-        sgdisk -a4096 -n1:0:+1024K -t1:EF02 -A1:set:2 "$BOOT_DISK"
+        # sgdisk -a4096 -n1:0:+1024K -t1:EF02 -A1:set:2 "$BOOT_DISK"
         sgdisk -n "${BOOT_PART}:1m:+512m" -t "${BOOT_PART}:ef00" "$BOOT_DISK"
         sgdisk -n "${POOL_PART}:0:-10m" -t "${POOL_PART}:bf00" "$POOL_DISK"
         ;;
@@ -87,6 +79,9 @@ case $STEP in
         ;;      
     6)
         echo ">>> [Step 6] chroot into mounted system..."
+        MNT="/mnt"
+        mkdir -p "$MNT/proc" "$MNT/sys" "$MNT/dev" "$MNT/dev/pts"
+
         mount -t proc proc /mnt/proc
         mount -t sysfs sys /mnt/sys
         mount -B /dev /mnt/dev
@@ -101,9 +96,17 @@ case $STEP in
         zfs mount zroot/home
         ;;
     8)
-        echo ">>> [Step 8] GRUB-style disk partitioning..."
-        ./sgdisk-debian.sh $BOOT_DISK
+        echo ">>> [Step 8] install rootfs to /mnt..."
+        mkdir /tmp/rootfs
+        mount -t squashfs /cdrom/TrueNAS-SCALE.update /tmp/rootfs
+        unsquashfs -d /mnt -f -da 16 -fr 16  /tmp/rootfs/rootfs.squashfs
         ;;
+    9)  
+        echo ">>> [Step 9] copy scripts to /mnt/tmp/"
+        mkdir -p "${RPATH}/tmp"
+        chmod +x "${RPATH}/usr/bin/dpkg"
+        chmod +x "${RPATH}/usr/bin/apt"
+        cp ztzbm* "${RPATH}/tmp/" 
     *)
         echo "others"
         ;;
