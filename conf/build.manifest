@@ -73,6 +73,10 @@ base-packages:
   install_recommends: true
 - name: systemd-timesyncd
   install_recommends: true
+- name: systemd-resolved
+  install_recommends: true
+- name: net-tools
+  install_recommends: true    
 - name: shim-signed
   install_recommends: true
 - name: usbutils

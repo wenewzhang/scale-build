@@ -59,6 +59,8 @@ EOF
         systemctl enable zfs-import-cache
         systemctl enable zfs-mount
         systemctl enable zfs-import.target
+        systemctl enable systemd-resolved
+        systemctl enable systemd-networkd
         ;;
     6)
         echo "Module 6: Updating initramfs"
