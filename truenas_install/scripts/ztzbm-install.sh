@@ -91,7 +91,7 @@ EOF
         mkdir -p /boot/efi/zbm
         cp /tmp/zbm/VMLINUZ.EFI /boot/efi/zbm/VMLINUZ-BACKUP.EFI
         efibootmgr -c -d "$BOOT_DISK" -p "$BOOT_PART" \
-          -L "ZFSBootMenu (Backup)" \
+          -L "OneNAS[zuti-0.1](Backup)" \
           -l '\zbm\VMLINUZ-BACKUP.EFI'
         ;;
     12)
@@ -99,7 +99,7 @@ EOF
         mkdir -p /boot/efi/zbm
         cp /tmp/zbm/VMLINUZ.EFI /boot/efi/zbm/VMLINUZ.EFI
         efibootmgr -c -d "$BOOT_DISK" -p "$BOOT_PART" \
-          -L "ZFSBootMenu" \
+          -L "OneNAS[zuti-0.1]" \
           -l '\zbm\VMLINUZ.EFI'
         ;;
     13)
