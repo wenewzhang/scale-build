@@ -34,7 +34,7 @@ echo "Set $INTERFACE to DHCP mode"
 # Restart network service
 if systemctl is-active --quiet networking; then
     systemctl restart networking
-elif 
+else
     ifdown "$INTERFACE" && ifup "$INTERFACE"
 fi
 
