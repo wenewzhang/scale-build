@@ -48,5 +48,5 @@ fi
 ./zbm-install.sh $DISK 7
 ./zbm-install.sh $DISK 8
 ./zbm-install.sh $DISK 9
-./network-setting.sh
+./network-setting.sh /mnt
 ./zbm-install.sh $DISK 6

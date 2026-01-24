@@ -79,7 +79,6 @@ case $STEP in
         ;;      
     6)
         echo ">>> [Step 6] chroot into mounted system..."
-        MNT="/mnt"
         mkdir -p "$MNT/proc" "$MNT/sys" "$MNT/dev" "$MNT/dev/pts"
 
         mount -t proc proc /mnt/proc
