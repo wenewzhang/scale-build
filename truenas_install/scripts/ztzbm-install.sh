@@ -106,6 +106,7 @@ EOF
         echo "Module 13: Setting root password and cleaning APT proxy"
         echo 'root:root' | chpasswd
         sed -i 's|172\.17\.0\.2:3142/||g' /etc/apt/sources.list
+        ssh-keygen -A
         ;;
     *)
         echo "Error: Invalid module number. Please use 1-13."
