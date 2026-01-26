@@ -115,6 +115,8 @@ case $STEP in
         ;;       
     11)  
         echo ">>> [Step 11] syslinux install to disk(legacy BIOS)."
+        mkdir -p ${MNT}/boot/syslinux
+        cp /usr/lib/syslinux/*.c32 ${MNT}/boot/syslinux
         syslinux --install ${BOOT_DEVICE}      
         ;;          
     *)

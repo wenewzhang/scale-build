@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BOOT_DISK="$1"
-BOOT_PART="2"
+BOOT_PART="1"
 BOOT_DEVICE="${BOOT_DISK}${BOOT_PART}"
 
 MODULE="$2"
@@ -22,6 +22,7 @@ if [ -z "$MODULE" ]; then
     echo "  11 - Create ZFSBootMenu backup boot entry"
     echo "  12 - Create ZFSBootMenu main boot entry"
     echo "  13 - Set root password and clean APT proxy"
+    echo "  14: make ext4 boot & configuring fstab"
     exit 1
 fi
 
@@ -71,11 +72,11 @@ EOF
         zfs set org.zfsbootmenu:commandline="quiet" zroot/ROOT
         ;;
     8)
-        echo "Module 8: Formatting boot partition"
+        echo "Module 8: Formatting boot partition(UEFI)"
         mkfs.vfat -F32 "$BOOT_DEVICE"
         ;;
     9)
-        echo "Module 9: Configuring fstab and mounting boot"
+        echo "Module 9: Configuring fstab and mounting boot(UEFI)"
         cat << EOF >> /etc/fstab
 $( blkid | grep "$BOOT_DEVICE" | cut -d ' ' -f 2 ) /boot/efi vfat defaults 0 0
 EOF
@@ -107,6 +108,16 @@ EOF
         echo 'root:root' | chpasswd
         sed -i 's|172\.17\.0\.2:3142/||g' /etc/apt/sources.list
         ssh-keygen -A
+        ;;
+    14)
+        echo "Module 14: make ext4 boot & configuring fstab"
+        mkfs.ext4 -O '^64bit' "$BOOT_DEVICE"
+        cat << EOF >> /etc/fstab
+$( blkid | grep "$BOOT_DEVICE" | cut -d ' ' -f 2 ) /boot/efi ext4 defaults 0 0
+EOF
+        mkdir -p /boot/syslinux
+        mount /boot/syslinux
+        cp /tmp/c32/*.c32 /boot/syslinux
         ;;
     *)
         echo "Error: Invalid module number. Please use 1-13."
