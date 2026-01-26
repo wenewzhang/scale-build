@@ -14,8 +14,9 @@ if [ -z "$STEP" ]; then
     echo "  6: chroot into mounted system"
     echo "  7: zpool export/import and mount datasets"
     echo "  8: install rootfs to /mnt..."
-    echo "  9: install to chroot"
-    echo " 10: Updating /etc/fstab..."
+    echo "  9: copy scripts to new system"
+    echo " 10: dd write gptmbr to disk(legacy BIOS)."
+    echo " 11: syslinux install to disk(legacy BIOS)."
     exit 1
 fi
 
@@ -24,11 +25,11 @@ udevadm settle
 
 # Set disk device if provided (for steps that need it)
 BOOT_DISK="$1"
-BOOT_PART="2"
+BOOT_PART="1"
 BOOT_DEVICE="${BOOT_DISK}${BOOT_PART}"
 
 POOL_DISK="$1"
-POOL_PART="3"
+POOL_PART="2"
 POOL_DEVICE="${POOL_DISK}${POOL_PART}"
 
 ID="zuti2601"
@@ -108,6 +109,14 @@ case $STEP in
         cp ztzbm* "${MNT}/tmp/"
         cp -rf /cdrom/scripts/zbm /mnt/tmp/.        
         ;;
+    10)  
+        echo ">>> [Step 10] dd write gptmbr to disk(legacy BIOS)"
+        dd bs=440 count=1 conv=notrunc if=/usr/lib/syslinux/mbr/gptmbr.bin of=${BOOT_DISK}      
+        ;;       
+    11)  
+        echo ">>> [Step 11] syslinux install to disk(legacy BIOS)."
+        syslinux --install ${BOOT_DEVICE}      
+        ;;          
     *)
         echo "others"
         ;;
