@@ -45,10 +45,15 @@ mount -B /dev ${MNT}/dev
 mount -t devpts pts ${MNT}/dev/pts
 chroot ${MNT}
 
-sleep 3
-umount ${MNT}/proc
-umount ${MNT}/sys
-umount ${MNT}/dev
-umount ${MNT}/dev/pts
-umount ${MNT}
+DELAY=1
+
+while ! umount -R "$MNT" 2>/dev/null; do
+    echo "Unmount failed. Retrying in $DELAY second(s)..."
+    sleep "$DELAY"
+done
+
+echo "Recursive unmount completed successfully."
+
 zfs set mountpoint=/ zroot/ROOT/${KERNEL}
+
+echo "ZFSBootMenu default boot set to "${KERNEL}
