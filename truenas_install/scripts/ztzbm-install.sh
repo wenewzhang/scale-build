@@ -119,7 +119,7 @@ EOF
         mount /boot/syslinux
         ;;
     *)
-        echo "Error: Invalid module number. Please use 1-13."
+        echo "Error: Invalid module number. Please use 1-14."
         exit 1
         ;;
 esac
