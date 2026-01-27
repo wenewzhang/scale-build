@@ -41,7 +41,7 @@ if [ "$FORCE" = false ]; then
     fi
 fi
 ./zbm-install.sh $DISK 1
-./zbm-install.sh $DISK 2
+./zbm-install.sh $DISK 13
 ./zbm-install.sh $DISK 3
 ./zbm-install.sh $DISK 4
 ./zbm-install.sh $DISK 5
@@ -51,4 +51,5 @@ fi
 ./network-setting.sh /mnt
 ./zbm-install.sh $DISK 10
 ./zbm-install.sh $DISK 11
+./zbm-install.sh $DISK 14
 ./zbm-install.sh $DISK 6

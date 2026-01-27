@@ -117,7 +117,6 @@ $( blkid | grep "$BOOT_DEVICE" | cut -d ' ' -f 2 ) /boot/efi ext4 defaults 0 0
 EOF
         mkdir -p /boot/syslinux
         mount /boot/syslinux
-        cp /tmp/c32/*.c32 /boot/syslinux
         ;;
     *)
         echo "Error: Invalid module number. Please use 1-13."

@@ -202,6 +202,8 @@ iso-packages:
 - systemd-resolved
 - syslinux
 - syslinux-common
+- fdisk
+- extlinux
 
 #
 # List of Git source repositories the build will checkout and perform a debian

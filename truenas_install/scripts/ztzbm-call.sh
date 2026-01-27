@@ -3,7 +3,6 @@
 if [ $# -ne 1 ]; then
     echo "Usage: $0 [-f] <disk_device>"
     echo "Example: $0 /dev/sda"
-    echo "Example: $0 /dev/sda"
     exit 1
 fi
 DISK="$1"

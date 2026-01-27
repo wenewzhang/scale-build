@@ -17,6 +17,9 @@ if [ -z "$STEP" ]; then
     echo "  9: copy scripts to new system"
     echo " 10: dd write gptmbr to disk(legacy BIOS)."
     echo " 11: syslinux install to disk(legacy BIOS)."
+    echo " 12: sgdisk 8300 for legacy BIOS."
+    echo " 13: sfdisk 8300 for legacy BIOS."
+    echo " 14: extlinux install for legacy BIOS."    
     exit 1
 fi
 
@@ -62,7 +65,7 @@ case $STEP in
         -O xattr=sa \
         -O relatime=on \
         -o autotrim=on \
-        -o compatibility=openzfs-2.2-linux \
+        -o compatibility=openzfs-2.3-linux \
         -m none zroot "$POOL_DEVICE"    
         ;;  
     4)
@@ -116,9 +119,26 @@ case $STEP in
     11)  
         echo ">>> [Step 11] syslinux install to disk(legacy BIOS)."
         mkdir -p ${MNT}/boot/syslinux
-        cp /usr/lib/syslinux/*.c32 ${MNT}/boot/syslinux
+        cp /usr/lib/syslinux/modules/bios/*.c32 ${MNT}/boot/syslinux
         syslinux --install ${BOOT_DEVICE}      
-        ;;          
+        ;;    
+    12)  
+        echo ">>> [Step 12] sgdisk 8300 for legacy BIOS."
+        sgdisk -n 1:2048:+512MiB -t 1:8300 -A 1:set:2 "${POOL_DISK}"
+        sgdisk -n 2:0:0 -t 2:BF01 "${POOL_DISK}"  
+        ;;  
+    13)  
+        echo ">>> [Step 13] sfdisk 8300 for legacy BIOS."
+cat <<EOF | sfdisk "${POOL_DISK}"
+label: dos
+start=1MiB, size=512MiB, type=83, bootable
+start=513MiB, size=+, type=83
+EOF
+        ;;  
+    14)  
+        echo ">>> [Step 14] extlinux install for legacy BIOS."
+        extlinux --install /boot/syslinux
+        ;;                                 
     *)
         echo "others"
         ;;
