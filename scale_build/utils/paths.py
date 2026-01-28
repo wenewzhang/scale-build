@@ -31,3 +31,5 @@ SECRETS_FILE = os.path.join(BUILDER_DIR, 'conf/secrets.yaml')
 SOURCES_DIR = os.path.join(BUILDER_DIR, 'sources')
 UPDATE_DIR = os.path.join(TMP_DIR, 'update')
 WORKDIR_OVERLAY = os.path.join(TMPFS, 'workdir-overlay')
+ZFS_EFI_URL = 'https://get.zfsbootmenu.org/latest.EFI'
+ZFS_KERNEL_URL = 'https://get.zfsbootmenu.org/latest.tar.gz'

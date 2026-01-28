@@ -79,6 +79,12 @@ base-packages:
   install_recommends: true    
 - name: shim-signed
   install_recommends: true
+- syslinux
+  install_recommends: true
+- syslinux-common
+  install_recommends: true
+- extlinux  
+  install_recommends: true
 - name: usbutils
   # lsusb seems useful/harmless, also requested by community on forums
   install_recommends: false
@@ -200,10 +206,7 @@ iso-packages:
 - python3-truenas-installer
 # Must be the last package as installing it breaks /etc/resolv.conf in chroot
 - systemd-resolved
-- syslinux
-- syslinux-common
 - fdisk
-- extlinux
 
 #
 # List of Git source repositories the build will checkout and perform a debian
