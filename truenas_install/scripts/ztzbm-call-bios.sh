@@ -14,4 +14,8 @@ DISK="$1"
 ./ztzbm-install.sh $DISK 6
 ./ztzbm-install.sh $DISK 7
 ./ztzbm-install.sh $DISK 13
-./ztzbm-install.sh $DISK 14
+./ztzbm-install.sh $DISK 16
+./ztzbm-install.sh $DISK 17
+./ztzbm-install.sh $DISK 18
+./ztzbm-install.sh $DISK 19
+./ztzbm-install.sh $DISK 20
