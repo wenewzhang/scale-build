@@ -22,7 +22,11 @@ if [ -z "$MODULE" ]; then
     echo "  11 - Create ZFSBootMenu backup boot entry"
     echo "  12 - Create ZFSBootMenu main boot entry"
     echo "  13 - Set root password and clean APT proxy"
-    echo "  14: make ext4 boot & configuring fstab"
+    echo "  14  make ext4 boot & configuring fstab"
+    echo "  15  make fs ext4"
+    echo "  16  make boot syslinux"
+    echo "  17  syslinux install to disk(legacy BIOS)."
+    echo "  18  extlinux install (legacy BIOS)."
     exit 1
 fi
 
@@ -118,6 +122,59 @@ EOF
         mkdir -p /boot/syslinux
         mount /boot/syslinux
         ;;
+    15)
+        echo "Module 15: make fs ext4"
+        mkfs.ext4 -O '^64bit' "$BOOT_DEVICE"
+        ;;
+    16)
+        echo "Module 16: make boot syslinux"
+        cat << EOF >> /etc/fstab
+$( blkid | grep "$BOOT_DEVICE" | cut -d ' ' -f 2 ) /boot/syslinux ext4 defaults 0 0
+EOF
+
+        mkdir /boot/syslinux
+        mount /boot/syslinux
+        ;;
+    17)  
+        echo ">>> Module 17 syslinux install to disk(legacy BIOS)."
+        cp /usr/lib/syslinux/modules/bios/*.c32 /boot/syslinux
+        # syslinux --install ${BOOT_DEVICE}      
+        ;;      
+    18)  
+        echo ">>> Module 18 extlinux install (legacy BIOS)."
+        extlinux --install /boot/syslinux    
+        ;;      
+    19)  
+        echo ">>> Module 19 dd (legacy BIOS)."
+        dd bs=440 count=1 conv=notrunc if=/usr/lib/syslinux/mbr.bin of="$BOOT_DISK" 
+        ;;             
+    20)
+        echo ">>> Module 20 write syslinux cfg."  
+        mkdir -p /boot/syslinux/zfsbootmenu  
+        cp /tmp/zbm/vmlinuz-bootmenu /boot/syslinux/zfsbootmenu/.
+        cp /tmp/zbm/initramfs-bootmenu.img /boot/syslinux/zfsbootmenu/.        
+        cat > /boot/syslinux/syslinux.cfg <<EOF
+UI menu.c32
+PROMPT 0
+
+MENU TITLE ZFSBootMenu
+TIMEOUT 50
+
+DEFAULT zfsbootmenu
+
+LABEL zfsbootmenu
+  MENU LABEL ZFSBootMenu
+  KERNEL /zfsbootmenu/vmlinuz-bootmenu
+  INITRD /zfsbootmenu/initramfs-bootmenu.img
+  APPEND zfsbootmenu quiet
+
+LABEL zfsbootmenu-backup
+  MENU LABEL ZFSBootMenu (Backup)
+  KERNEL /zfsbootmenu/vmlinuz-bootmenu-backup
+  INITRD /zfsbootmenu/initramfs-bootmenu-backup.img
+  APPEND zfsbootmenu quiet
+EOF
+        ;;       
     *)
         echo "Error: Invalid module number. Please use 1-14."
         exit 1
