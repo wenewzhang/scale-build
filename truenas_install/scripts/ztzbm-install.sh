@@ -146,7 +146,7 @@ EOF
         ;;      
     19)  
         echo ">>> Module 19 dd (legacy BIOS)."
-        dd bs=440 count=1 conv=notrunc if=/usr/lib/syslinux/mbr.bin of="$BOOT_DISK" 
+        dd bs=440 count=1 conv=notrunc if=/usr/lib/syslinux/mbr/mbr.bin of="$BOOT_DISK" 
         ;;             
     20)
         echo ">>> Module 20 write syslinux cfg."  

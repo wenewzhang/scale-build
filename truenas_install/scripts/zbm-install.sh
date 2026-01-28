@@ -13,7 +13,7 @@ if [ -z "$STEP" ]; then
     echo "  5: mount show"
     echo "  6: chroot into mounted system"
     echo "  7: zpool export/import and mount datasets"
-    echo "  8: install rootfs to /mnt..."
+    echo "  8: install rootfs to ${MNT}..."
     echo "  9: copy scripts to new system"
     echo " 10: dd write gptmbr to disk(legacy BIOS)."
     echo " 11: syslinux install to disk(legacy BIOS)."
@@ -85,11 +85,11 @@ case $STEP in
         echo ">>> [Step 6] chroot into mounted system..."
         mkdir -p "$MNT/proc" "$MNT/sys" "$MNT/dev" "$MNT/dev/pts"
 
-        mount -t proc proc /mnt/proc
-        mount -t sysfs sys /mnt/sys
-        mount -B /dev /mnt/dev
-        mount -t devpts pts /mnt/dev/pts
-        chroot /mnt /bin/bash
+        mount -t proc proc ${MNT}/proc
+        mount -t sysfs sys ${MNT}/sys
+        mount -B /dev ${MNT}/dev
+        mount -t devpts pts ${MNT}/dev/pts
+        chroot ${MNT} /bin/bash
         ;;
     7)
         echo ">>> [Step 7] zpool export/import and mount datasets..."
@@ -102,7 +102,7 @@ case $STEP in
         echo ">>> [Step 8] install rootfs to /mnt..."
         mkdir /tmp/rootfs
         mount -t squashfs /cdrom/TrueNAS-SCALE.update /tmp/rootfs
-        unsquashfs -d /mnt -f -da 16 -fr 16  /tmp/rootfs/rootfs.squashfs
+        unsquashfs -d ${MNT} -f -da 16 -fr 16  /tmp/rootfs/rootfs.squashfs
         ;;
     9)  
         echo ">>> [Step 9] copy scripts to /mnt/tmp/"
@@ -110,7 +110,7 @@ case $STEP in
         chmod +x "${MNT}/usr/bin/dpkg"
         chmod +x "${MNT}/usr/bin/apt"
         cp ztzbm* "${MNT}/tmp/"
-        cp -rf /cdrom/scripts/zbm /mnt/tmp/.        
+        cp -rf /cdrom/scripts/zbm ${MNT}/tmp/.        
         ;;
     10)  
         echo ">>> [Step 10] dd write gptmbr to disk(legacy BIOS)"
