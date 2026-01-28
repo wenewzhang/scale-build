@@ -15,7 +15,7 @@ from scale_build.utils.manifest import get_apt_repos, get_manifest
 from scale_build.utils.run import run
 from scale_build.utils.paths import CD_DIR, CD_FILES_DIR, CDROM_FILES_DIR, CHROOT_BASEDIR, CONF_GRUB, PKG_DIR, RELEASE_DIR, TMP_DIR
 from scale_build.utils.paths import BUILDER_DIR
-
+from scale_build.utils.vmlinuz_efi import ensure_zfs_vmlinuz_efi, ensure_zfs_kernel_files
 from scale_build.config import TRUENAS_VENDOR
 from scale_build.config import PRESERVE_ISO
 
@@ -135,6 +135,8 @@ def make_iso_file():
             'grub-pc-bin', 'mtools', 'xorriso'
         ])
 
+        ensure_zfs_vmlinuz_efi()
+        ensure_zfs_kernel_files()
         os.makedirs(os.path.join(CD_DIR, 'scripts'), exist_ok=True)
         run(f'rsync -aKv {CDROM_FILES_DIR}/ {CD_DIR}/scripts/', shell=True)
         # Debian GRUB EFI searches for GRUB config in a different place
