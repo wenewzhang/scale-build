@@ -75,7 +75,7 @@ def build_rootfs_image():
 
     # Create the outer image now
     update_file = update_file_path(version)
-    run(['mksquashfs', UPDATE_DIR, update_file, '-noD'])
+    run(['mksquashfs', UPDATE_DIR, update_file, '-noD', '-comp', 'gzip'])
     update_file_checksum = calculate_sha256(update_file)
     with open(update_file_checksum_path(version), 'w') as f:
         f.write(update_file_checksum)
@@ -390,11 +390,11 @@ def build_extensions():
         with open(f"{td}/usr/lib/extension-release.d/extension-release.functioning-dpkg", "w") as f:
             f.write("ID=_any\n")
 
-        run(["mksquashfs", td, f"{sysext_extensions_dir}/functioning-dpkg.raw"])
+        run(["mksquashfs", td, f"{sysext_extensions_dir}/functioning-dpkg.raw", '-comp', 'gzip'])
 
     with tempfile.TemporaryDirectory() as td:
         rootfs_image = f"{td}/rootfs.squashfs"
-        run(["mksquashfs", CHROOT_BASEDIR, rootfs_image, "-one-file-system"])
+        run(["mksquashfs", CHROOT_BASEDIR, rootfs_image, "-one-file-system", '-comp', 'gzip'])
         do_build_extensions(rootfs_image, sysext_extensions_dir)
 
     external_extesions_dir = os.path.join(RELEASE_DIR, "extensions")
