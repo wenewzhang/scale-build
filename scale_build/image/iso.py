@@ -99,7 +99,7 @@ def make_iso_file():
         exclude_file.write('\n'.join(pruning_cd_basedir_contents()))
         exclude_file.flush()
 
-        run(['mksquashfs', CHROOT_BASEDIR, tmp_truenas_path, '-comp', 'xz', '-ef', exclude_file.name])
+        run(['mksquashfs', CHROOT_BASEDIR, tmp_truenas_path, '-comp', 'gzip', '-ef', exclude_file.name])
 
     os.makedirs(os.path.join(CD_DIR, 'live'), exist_ok=True)
     shutil.move(tmp_truenas_path, os.path.join(CD_DIR, 'live/filesystem.squashfs'))
@@ -323,7 +323,7 @@ def replace_installation_files(update_path):
         os.path.join(BUILDER_DIR, 'truenas_install'),
         dest_i,
     )
-    run(["mksquashfs", update_dest, update_path, "-comp", "xz"])
+    run(["mksquashfs", update_dest, update_path, "-comp", "gzip"])
 
     logger.info('Replacing installation files success: %s', update_path)
 
@@ -347,6 +347,6 @@ def patch_installation_files(update_path):
 
     run(["sh", "-c",f'patch -p2 -d {dest_i} < {patch_i}'])
 
-    run(["mksquashfs", update_dest, update_path, "-comp", "xz"])
+    run(["mksquashfs", update_dest, update_path, "-comp", "gzip"])
 
     logger.info('Patch installation files success: %s', update_path)    

@@ -63,7 +63,7 @@ def build_rootfs_image():
 
     # Create the inner image
     # run(['umount', '-f', os.path.join(CHROOT_BASEDIR, 'proc')])
-    run(['mksquashfs', CHROOT_BASEDIR, os.path.join(UPDATE_DIR, 'rootfs.squashfs'), '-comp', 'xz', \
+    run(['mksquashfs', CHROOT_BASEDIR, os.path.join(UPDATE_DIR, 'rootfs.squashfs'), '-comp', 'gzip', \
          '-e', './tmp/tmpfs/chroot/proc', './tmp/tmpfs/chroot/sys', './tmp/tmpfs/chroot/dev'])
 
     # Build any MANIFEST information

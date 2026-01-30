@@ -102,7 +102,7 @@ class Extension:
         with open(f"{self.chroot}/usr/lib/extension-release.d/extension-release.{name}", "w") as f:
             f.write("ID=_any\n")
 
-        run(["mksquashfs", self.chroot, dst_path, "-comp", "xz"])
+        run(["mksquashfs", self.chroot, dst_path, "-comp", "gzip"])
 
     def run(self, cmd: list[str]):
         run_in_chroot(cmd, chroot=self.chroot)
