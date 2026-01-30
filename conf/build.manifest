@@ -217,39 +217,8 @@ iso-packages:
 # to be built
 ############################################################################
 sources:
-- name: parted
-  repo: https://github.com/truenas/parted
-  branch: master
-  debian_fork: true
-  predepscmd:
-    - "apt install -y wget xz-utils"
-    - "./pull.sh"
-  deoptions: nocheck
-  generate_version: false
-  branch: master
-- name: smartmontools
-  repo: https://github.com/truenas/smartmontools
-  branch: master
-  debian_fork: true
-  predepscmd:
-    - "apt install -y wget xz-utils"
-    - "./pull.sh"
-  deoptions: nocheck
-  generate_version: false
-- name: aiohttp_rpc
-  repo: https://github.com/wenewzhang/aiohttp_rpc.git
-  branch: main    
-- name: truenas_crypto_utils
-  repo: https://github.com/truenas/truenas_crypto_utils
-  branch: master  
-- name: truenas_connect_utils
-  repo: https://github.com/truenas/truenas_connect_utils
-  branch: master  
 - name: truenas_installer
   repo: https://github.com/wenewzhang/truenas-installer
-  branch: master
-- name: truenas_api_client
-  repo: https://github.com/truenas/api_client
   branch: master
 - name: licenselib
   repo: https://github.com/truenas/licenselib
