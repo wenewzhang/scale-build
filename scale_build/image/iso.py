@@ -354,6 +354,8 @@ def patch_installation_files(update_path):
 def update_installer_files(system_path):
     logger.info('update_installer_files')
     update_dest = os.path.join(TMP_DIR, "system")
+    if os.path.exists(system_path):
+        shutil.rmtree(system_path)
 
     if not os.path.exists(system_path):
         raise RuntimeError(f"System.squashfs file {system_path} not exists")
