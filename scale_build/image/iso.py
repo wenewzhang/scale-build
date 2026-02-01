@@ -14,7 +14,7 @@ from scale_build.exceptions import CallError
 from scale_build.utils.manifest import get_apt_repos, get_manifest
 from scale_build.utils.run import run
 from scale_build.utils.paths import CD_DIR, CD_FILES_DIR, CDROM_FILES_DIR, CHROOT_BASEDIR, CONF_GRUB, PKG_DIR, RELEASE_DIR, TMP_DIR
-from scale_build.utils.paths import BUILDER_DIR
+from scale_build.utils.paths import BUILDER_DIR, INSTALLER_PATH
 from scale_build.utils.vmlinuz_efi import ensure_zfs_vmlinuz_efi, ensure_zfs_kernel_files
 from scale_build.config import TRUENAS_VENDOR
 from scale_build.config import PRESERVE_ISO
@@ -350,3 +350,15 @@ def patch_installation_files(update_path):
     run(["mksquashfs", update_dest, update_path, "-comp", "xz"])
 
     logger.info('Patch installation files success: %s', update_path)    
+
+def update_installer_files(system_path):
+    logger.info('update_installer_files')
+    update_dest = os.path.join(TMP_DIR, "system")
+
+    if not os.path.exists(system_path):
+        raise RuntimeError(f"System.squashfs file {system_path} not exists")
+    
+    run(["unsquashfs", "-d", update_dest, system_path])
+    shutil.copytree(INSTALLER_PATH, os.path.join(update_dest, '/usr/lib/python3/dist-packages/truenas_installer/'))
+    run(["mksquashfs", update_dest, system_path, "-comp", "xz"])
+    logger.info('Update installer files success: %s', system_path)    

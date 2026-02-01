@@ -33,3 +33,4 @@ UPDATE_DIR = os.path.join(TMP_DIR, 'update')
 WORKDIR_OVERLAY = os.path.join(TMPFS, 'workdir-overlay')
 ZFS_EFI_URL = 'https://get.zfsbootmenu.org/latest.EFI'
 ZFS_KERNEL_URL = 'https://get.zfsbootmenu.org/latest.tar.gz'
+INSTALLER_PATH = '../truenas-installer/truenas_installer/'
