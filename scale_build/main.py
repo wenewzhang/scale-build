@@ -11,7 +11,7 @@ from .upstream_package_updates import check_upstream_package_updates
 from .epoch import check_epoch
 from .exceptions import CallError
 from .iso import build_iso
-from .image.iso import pack_iso, unpack_iso, replace_installation_files, patch_installation_files
+from .image.iso import pack_iso, unpack_iso, replace_installation_files, patch_installation_files, update_installer_files
 from .package import build_packages
 from .preflight import preflight_check
 from .update_image import build_update_image
