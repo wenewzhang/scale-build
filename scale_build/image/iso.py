@@ -281,6 +281,8 @@ def unpack_iso(iso_path):
     logger.info('Unpacking %s', iso_path)
     isotmp="/tmp/iso_tmp"
     if os.path.exists(isotmp):
+        if os.path.ismount(isotmp):
+            run(['umount', '-R', isotmp])
         shutil.rmtree(isotmp)
 
     os.makedirs(isotmp, exist_ok=True)    
@@ -361,6 +363,11 @@ def update_installer_files(system_path):
         raise RuntimeError(f"System.squashfs file {system_path} not exists")
     
     run(["unsquashfs", "-d", update_dest, system_path])
-    shutil.copytree(INSTALLER_PATH, os.path.join(update_dest, '/usr/lib/python3/dist-packages/truenas_installer/'))
+    installer_path =  os.path.join(update_dest, '/usr/lib/python3/dist-packages/truenas_installer/')
+    shutil.rmtree(installer_path)
+
+    shutil.copytree(INSTALLER_PATH, installer_path)
+    os.remove(system_path)
+
     run(["mksquashfs", update_dest, system_path, "-comp", "xz"])
     logger.info('Update installer files success: %s', system_path)    
