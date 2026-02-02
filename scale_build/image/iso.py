@@ -363,7 +363,7 @@ def update_installer_files(system_path):
         raise RuntimeError(f"System.squashfs file {system_path} not exists")
     
     run(["unsquashfs", "-d", update_dest, system_path])
-    installer_path =  os.path.join(update_dest, '/usr/lib/python3/dist-packages/truenas_installer/')
+    installer_path =  os.path.join(update_dest, 'usr/lib/python3/dist-packages/truenas_installer/')
     shutil.rmtree(installer_path)
 
     shutil.copytree(INSTALLER_PATH, installer_path)
