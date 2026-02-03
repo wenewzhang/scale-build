@@ -212,6 +212,7 @@ iso-packages:
 - fonts-wqy-microhei 
 - fonts-wqy-zenhei 
 - xfonts-intl-chinese
+- fbterm
 #
 # List of Git source repositories the build will checkout and perform a debian
 # package build inside of
