@@ -43,6 +43,9 @@ def install_iso_packages_impl():
     for package in get_manifest()['iso-packages']:
         run_in_chroot(['apt', 'install', '-y', package])
 
+    run_in_chroot(['bash', '-c', 'echo "en_US.UTF-8 UTF-8" > /etc/locale.gen'])
+    run_in_chroot(['bash', '-c', 'echo "zh_CN.UTF-8 UTF-8" >> /etc/locale.gen'])
+    run_in_chroot(['locale-gen'])
     # We want to make sure that truenas-installer service is enabled
     run_in_chroot(['systemctl', 'enable', 'truenas-installer.service'])
 

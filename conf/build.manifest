@@ -207,7 +207,11 @@ iso-packages:
 # Must be the last package as installing it breaks /etc/resolv.conf in chroot
 - systemd-resolved
 - fdisk
-
+# chinese
+- locales 
+- fonts-wqy-microhei 
+- fonts-wqy-zenhei 
+- xfonts-intl-chinese
 #
 # List of Git source repositories the build will checkout and perform a debian
 # package build inside of
