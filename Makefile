@@ -62,6 +62,7 @@ branchout: checkout pipcache pipinstall
 del:
 	sudo rm -rf logs/
 	sudo rm -rf tmp/
+	sudo rm -rf sources/
 	sudo rm -rf venv-*
 	sudo rm -rf "$(DEST_DIR)"
 test: check pipcache pipinstall
