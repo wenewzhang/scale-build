@@ -16,12 +16,16 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "creating_dataset": "Creating dataset",
         "installation_completed": "Installation completed successfully",
         "upgrade_completed": "Upgrade completed successfully",
+        "extracting": "Extracting",
+        "unsquashfs_failed": "unsquashfs failed with exit code {exit_code}: {output}",
     },
     "zh": {
         # 安装进度消息 - 用户通过 write_progress 看到的消息
         "creating_dataset": "正在创建数据集",
         "installation_completed": "安装成功完成",
         "upgrade_completed": "升级成功完成",
+        "extracting": "正在解压",
+        "unsquashfs_failed": "unsquashfs 失败，退出代码 {exit_code}: {output}",
     }
 }
 

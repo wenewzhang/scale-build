@@ -355,13 +355,13 @@ def main():
                     if m := RE_UNSQUASHFS_PROGRESS.match(buffer[1:].decode("utf-8", "ignore")):
                         write_progress(
                             int(m.group("extracted")) / int(m.group("total")) * 0.5,
-                            "Extracting",
+                            _("extracting"),
                         )
                         buffer = b""
 
             p.wait()
             if p.returncode != 0:
-                write_error(f"unsquashfs failed with exit code {p.returncode}: {stdout}")
+                write_error(_("unsquashfs_failed", exit_code=p.returncode, output=stdout))
                 raise subprocess.CalledProcessError(p.returncode, cmd, stdout)            
     else:
         logger.info("Should upgrade here!")
