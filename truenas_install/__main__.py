@@ -329,10 +329,8 @@ def main():
             run_command(["mount", "-t", "sysfs", "sys", f"{tmpdir}/sys"])
             run_command(["mount", "--bind", "/dev", f"{tmpdir}/dev"])
 
-        # with tempfile.TemporaryDirectory() as root:
-        #     undo = []
-        #     ds_info = []
-            run_command(["mount", "-t", "zfs", dataset_name, tmpdir])
+            run_command(["zpool", "export", pool_name])
+            run_command(["zpool", "import", "-N", "-R", pool_name])
             cmd = [
                 "unsquashfs",
                 "-d", tmpdir,
