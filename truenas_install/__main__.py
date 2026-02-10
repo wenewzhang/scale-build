@@ -3,6 +3,8 @@ import json
 import platform
 import sys
 
+from .i18n import _, set_language
+
 
 # LEGACY_TRUENAS_VERSION_ERR_MSG = (
 #     "Migrating TrueNAS CORE to TrueNAS SCALE 24.10 (or later) using update file upload is not supported. "
@@ -260,6 +262,11 @@ def main():
     logger.info("Starting zuti installation...")
     input = json.loads(sys.stdin.read())
     logger.info("input: %s", input)
+    
+    # 设置语言（从 input 中获取，默认为英文）
+    language = input.get("language", "en")
+    set_language(language)
+    
     version = input.get("version", None)
     is_fresh_install = version is None
 
@@ -284,7 +291,7 @@ def main():
 
     with open(os.path.join(src, "manifest.json")) as f:
         manifest = json.load(f)
-       
+      
     # old_bootfs_prop = run_command(["zpool", "get", "-H", "-o", "value", "bootfs", pool_name]).stdout.strip()
     # old_root_dataset = None
     # if old_root is not None:
@@ -293,7 +300,7 @@ def main():
     #             old_root_dataset = i.mount_source
     #             break
     if is_fresh_install:
-        write_progress(0, "Creating dataset")
+        write_progress(0, _("creating_dataset"))
     # if input.get("dataset_name"):
     #     dataset_name = input["dataset_name"]
     # else:
@@ -451,7 +458,7 @@ def main():
     #                 # In this case, /etc/machine-id would be treated as the valid
     #                 # machine-id which it will be otherwise as well if we use
     #                 # systemd-machine-id-setup --print to confirm but just to be cautious
-    #                 # we remove this as it will be generated automatically by systemd then
+    #                 we remove this as it will be generated automatically by systemd then
     #                 # complying with /etc/machine-id contents
     #                 os.unlink(f"{root}/var/lib/dbus/machine-id")
 
@@ -534,7 +541,7 @@ def main():
     #                     os.unlink(f"{root}/etc/machine-id")
 
     #                 run_command(["systemd-machine-id-setup", f"--root={root}"])
-            
+    #            
     #             # 确保挂载点目录存在
     #             mount_points = [
     #                 f"{root}/dev",
@@ -608,7 +615,7 @@ def main():
     #             # write_progress(0.95, "Configuring FIPS")
     #             # run_command(["chroot", root, "/usr/bin/configure_fips"])
     #             run_grub_install = old_root is None
-                
+    #                
     #             logger.debug("run_grub_install 1: %s", run_grub_install)
 
     #             if run_grub_install is False:
@@ -741,7 +748,7 @@ def main():
     #     raise
 
     # configure_system_for_zectl(pool_name)
-    write_progress(1.0, f"{'Installation' if is_fresh_install else 'Upgrade'} completed successfully")
+    write_progress(1.0, _("installation_completed") if is_fresh_install else _("upgrade_completed"))
 
 
 if __name__ == "__main__":
