@@ -327,6 +327,13 @@ def main():
             run_command(["zpool", "import", pool_name])
             run_command(["zfs", "mount", dataset_name])   
             # run_command(["zpool", "import", "-R", f"{tmpdir}", pool_name])
+            # 检查 tmpdir 是否是挂载点
+            try:
+                result = run_command(["mountpoint", "-q", tmpdir])
+                is_mountpoint = result.returncode == 0
+            except Exception:
+                is_mountpoint = False
+            logger.info(f"tmpdir '{tmpdir}' is mountpoint: {is_mountpoint}")
             cmd = [
                 "unsquashfs",
                 "-d", tmpdir,
