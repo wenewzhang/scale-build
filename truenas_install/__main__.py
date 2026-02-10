@@ -316,6 +316,53 @@ def main():
 
         run_command(["zfs", "create", "-o", "canmount=noauto", "-o", "mountpoint=/", f"{dataset_name}"])
         run_command(["zpool", "set", f"bootfs={dataset_name}", pool_name])        
+        run_command(["udevadm", "trigger"])        
+        
+        # 创建临时挂载点并挂载数据集
+        with tempfile.TemporaryDirectory(prefix="zuti") as tmpdir:
+            run_command(["mkdir", "-p", tmpdir])
+            # run_command(["mount", "-t", "zfs", dataset_name, tmpdir])
+            
+            # 创建并挂载 proc, sys, dev
+            run_command(["mkdir", "-p", f"{tmpdir}/proc", f"{tmpdir}/sys", f"{tmpdir}/dev"])
+            run_command(["mount", "-t", "proc", "proc", f"{tmpdir}/proc"])
+            run_command(["mount", "-t", "sysfs", "sys", f"{tmpdir}/sys"])
+            run_command(["mount", "--bind", "/dev", f"{tmpdir}/dev"])
+
+        # with tempfile.TemporaryDirectory() as root:
+        #     undo = []
+        #     ds_info = []
+            run_command(["mount", "-t", "zfs", dataset_name, tmpdir])
+            cmd = [
+                "unsquashfs",
+                "-d", tmpdir,
+                "-f",
+                "-da", "16",
+                "-fr", "16",
+                # "-exclude-file", exclude_list_file.name,
+                os.path.join(src, "rootfs.squashfs"),
+            ]
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            stdout = ""
+            buffer = b""
+            for char in iter(lambda: p.stdout.read(1), b""):
+                buffer += char
+                if char == b"\n":
+                    stdout += buffer.decode("utf-8", "ignore")
+                    buffer = b""
+
+                if buffer and buffer[0:1] == b"\r" and buffer[-1:] == b"%":
+                    if m := RE_UNSQUASHFS_PROGRESS.match(buffer[1:].decode("utf-8", "ignore")):
+                        write_progress(
+                            int(m.group("extracted")) / int(m.group("total")) * 0.5,
+                            "Extracting",
+                        )
+                        buffer = b""
+
+            p.wait()
+            if p.returncode != 0:
+                write_error(f"unsquashfs failed with exit code {p.returncode}: {stdout}")
+                raise subprocess.CalledProcessError(p.returncode, cmd, stdout)            
     else:
         logger.info("Should upgrade here!")
 
