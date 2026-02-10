@@ -314,17 +314,19 @@ def main():
                     dataset_name = probe_dataset_name
                     break
                 
-        run_command(["zfs", "create", "-o", "mountpoint=none", f"{pool_name}/ROOT"])
-        run_command(["zfs", "create", "-o", "canmount=noauto", "-o", "mountpoint=/", f"{dataset_name}"])
-        run_command(["zpool", "set", f"bootfs={dataset_name}", pool_name])        
+        # run_command(["zfs", "create", "-o", "mountpoint=none", f"{pool_name}/ROOT"])     
         run_command(["udevadm", "trigger"])        
         
         # 创建临时挂载点并挂载数据集
         with tempfile.TemporaryDirectory(prefix="zuti") as tmpdir:
-            run_command(["mkdir", "-p", tmpdir])
+            run_command(["zfs", "create", "-o", "canmount=noauto", "-o", f"mountpoint={tmpdir}", f"{dataset_name}"])
+            run_command(["zpool", "set", f"bootfs={dataset_name}", pool_name])   
+            # run_command(["mkdir", "-p", tmpdir])
             # run_command(["mount", "-t", "zfs", dataset_name, tmpdir])          
-            run_command(["zpool", "export", pool_name])
-            run_command(["zpool", "import", "-N", "-R", pool_name])
+            run_command(["zpool", "export", "-f", pool_name])
+            run_command(["zpool", "import", pool_name])
+            run_command(["zfs", "mount", dataset_name])   
+            # run_command(["zpool", "import", "-R", f"{tmpdir}", pool_name])
             cmd = [
                 "unsquashfs",
                 "-d", tmpdir,
