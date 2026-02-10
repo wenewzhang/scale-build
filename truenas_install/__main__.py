@@ -269,7 +269,7 @@ def main():
     
     version = input.get("version", None)
     is_fresh_install = version is None
-
+    boot_mode = input.get("boot_mode", "UEFI")
     # if input.get("precheck"):
     #     if precheck_result := precheck(old_root):
     #         fatal, text = precheck_result
@@ -288,6 +288,7 @@ def main():
     # post_install = input.get("post_install", None)
     # sql = input.get("sql", None)
     src = input["src"]
+    boot_mode = input.get("boot_mode")
 
     with open(os.path.join(src, "manifest.json")) as f:
         manifest = json.load(f)
@@ -399,6 +400,16 @@ EOF"""])
             # run_command(["chroot", tmpdir, "dpkg-reconfigure", "console-setup"])
             run_command(["chroot", tmpdir, "update-initramfs", "-c", "-k", "all"])
             run_command(["chroot", tmpdir, "zfs", "set", f"org.zfsbootmenu:commandline=quiet", f"{pool_name}/ROOT"])
+            if boot_mode == 'UEFI':                
+                for disk in disks:
+                    first_part = f"/dev/{disk}1"
+                    run_command(["chroot", tmpdir, "mkfs.vfat", "-F32", first_part])
+                    blkid_output = run_command(["chroot", tmpdir,"sh", "-c", f"blkid | grep {first_part} | cut -d ' ' -f 2"]).stdout.strip()
+                    bootfs = f"{blkid_output} /boot/efi vfat defaults 0 0"
+                    run_command(["chroot", tmpdir,"sh", "-c", f"echo {bootfs} >> /etc/fstab"])
+
+            run_command(["chroot", tmpdir,"sh", "-c", "mkdir", "-p", "/boot/efi"])
+            run_command(["chroot", tmpdir,"sh", "-c", "mount", "/boot/efi"])
 
     else:
         logger.info("Should upgrade here!")
