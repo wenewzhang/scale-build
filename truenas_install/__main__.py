@@ -328,13 +328,9 @@ def main():
             run_command(["zpool", "import", pool_name])
             run_command(["zfs", "mount", dataset_name])   
             # run_command(["zpool", "import", "-R", f"{tmpdir}", pool_name])
-            # 检查 tmpdir 是否是挂载点
-            try:
-                result = run_command(["mountpoint", "-q", tmpdir])
-                is_mountpoint = result.returncode == 0
-            except Exception:
-                is_mountpoint = False
-            logger.info(f"tmpdir '{tmpdir}' is mountpoint: {is_mountpoint}")
+
+            check_mountpoint(tmpdir)
+            
             cmd = [
                 "unsquashfs",
                 "-d", tmpdir,
@@ -410,6 +406,8 @@ EOF"""])
 
             run_command(["chroot", tmpdir,"sh", "-c", "mkdir", "-p", "/boot/efi"])
             run_command(["chroot", tmpdir,"sh", "-c", "mount", "/boot/efi"])
+            check_mountpoint_chroot("/boot/efi", tmpdir)
+          
 
     else:
         logger.info("Should upgrade here!")
@@ -839,5 +837,40 @@ EOF"""])
     write_progress(1.0, _("installation_completed") if is_fresh_install else _("upgrade_completed"))
 
 
+def check_mountpoint(path):
+    try:
+        # 预检查路径是否存在，防止无效路径混淆日志
+        if not os.path.exists(path):
+            logger.warning(f"Check failed: Path '{path}' does not exist.")
+            return False
+
+        # 方案 A: 保持使用 mountpoint 工具 (对 ZFS 挂载点检测非常精准)
+        result = run_command(["mountpoint", "-q", path])
+        is_mounted = result.returncode == 0
+        
+        # 方案 B: (可选) 使用 Python 原生方法，减少系统调用开销
+        # is_mounted = os.path.ismount(path)
+
+        logger.info(f"Path '{path}' is mountpoint: {is_mounted}")
+        return is_mounted
+    except Exception as e:
+        logger.error(f"Error checking mountpoint for '{path}': {e}")
+        return False
+
+def check_mountpoint_chroot(path, rpath):
+    try:
+        if not os.path.exists(path):
+            logger.warning(f"Check failed: Path '{path}' does not exist.")
+            return False
+
+        result = run_command(["chroot", rpath, "mountpoint", "-q", path])
+        is_mounted = result.returncode == 0
+
+        logger.info(f"Path '{path}' is mountpoint: {is_mounted}")
+        return is_mounted
+    except Exception as e:
+        logger.error(f"Error checking mountpoint for '{path}': {e}")
+        return False      
+              
 if __name__ == "__main__":
     main()
