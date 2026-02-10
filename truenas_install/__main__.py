@@ -377,6 +377,18 @@ deb http://deb.debian.org/debian trixie-updates main non-free-firmware contrib
 deb-src http://deb.debian.org/debian trixie-updates main non-free-firmware contrib
 EOF"""])
             run_command(["sh", "-c", f"echo 'REMAKE_INITRD=yes' > {tmpdir}/etc/dkms/zfs.conf"])
+            run_command(["chroot", tmpdir, "systemctl", "enable", "zfs.target"])
+            run_command(["chroot", tmpdir, "systemctl", "enable", "zfs-import-cache"])
+            run_command(["chroot", tmpdir, "systemctl", "enable", "zfs-mount"])
+            run_command(["chroot", tmpdir, "systemctl", "enable", "zfs-import.target"])
+            run_command(["chroot", tmpdir, "systemctl", "enable", "systemd-resolved"])
+            run_command(["chroot", tmpdir, "systemctl", "enable", "systemd-networkd"])
+            run_command(["chroot", tmpdir, "dpkg-reconfigure", "locales"])
+            run_command(["chroot", tmpdir, "dpkg-reconfigure", "tzdata"])
+            run_command(["chroot", tmpdir, "dpkg-reconfigure", "keyboard-configuration"])
+            run_command(["chroot", tmpdir, "dpkg-reconfigure", "console-setup"])
+            run_command(["chroot", tmpdir, "update-initramfs", "-c", "-k", "all"])
+            run_command(["chroot", tmpdir, "zfs", "set", f"org.zfsbootmenu:commandline=quiet", f"{pool_name}/ROOT"])
 
     else:
         logger.info("Should upgrade here!")
