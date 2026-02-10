@@ -313,7 +313,8 @@ def main():
                 if probe_dataset_name not in existing_datasets:
                     dataset_name = probe_dataset_name
                     break
-
+                
+        run_command(["zfs", "create", "-o", "mountpoint=none", f"{pool_name}/ROOT"])
         run_command(["zfs", "create", "-o", "canmount=noauto", "-o", "mountpoint=/", f"{dataset_name}"])
         run_command(["zpool", "set", f"bootfs={dataset_name}", pool_name])        
         run_command(["udevadm", "trigger"])        
