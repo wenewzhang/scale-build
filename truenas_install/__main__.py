@@ -314,15 +314,8 @@ def main():
                     dataset_name = probe_dataset_name
                     break
 
-        run_command([
-            "zfs", "create",
-            "-o", "mountpoint=legacy",
-            "-o", f"truenas:kernel_version={manifest['kernel_version']}",
-            "-o", "zectl:keep=False",
-            dataset_name,
-        ])
-        run_command(["zfs", "create", "-o", "canmount=noauto", "-o", "mountpoint=/", f"{pool_name}/ROOT/{dataset_name}"])
-        run_command(["zpool", "set", f"bootfs={pool_name}/ROOT/{dataset_name}", pool_name])        
+        run_command(["zfs", "create", "-o", "canmount=noauto", "-o", "mountpoint=/", f"{dataset_name}"])
+        run_command(["zpool", "set", f"bootfs={dataset_name}", pool_name])        
     else:
         logger.info("Should upgrade here!")
 
