@@ -321,14 +321,7 @@ def main():
         # 创建临时挂载点并挂载数据集
         with tempfile.TemporaryDirectory(prefix="zuti") as tmpdir:
             run_command(["mkdir", "-p", tmpdir])
-            # run_command(["mount", "-t", "zfs", dataset_name, tmpdir])
-            
-            # 创建并挂载 proc, sys, dev
-            run_command(["mkdir", "-p", f"{tmpdir}/proc", f"{tmpdir}/sys", f"{tmpdir}/dev"])
-            run_command(["mount", "-t", "proc", "proc", f"{tmpdir}/proc"])
-            run_command(["mount", "-t", "sysfs", "sys", f"{tmpdir}/sys"])
-            run_command(["mount", "--bind", "/dev", f"{tmpdir}/dev"])
-
+            # run_command(["mount", "-t", "zfs", dataset_name, tmpdir])          
             run_command(["zpool", "export", pool_name])
             run_command(["zpool", "import", "-N", "-R", pool_name])
             cmd = [
@@ -360,7 +353,31 @@ def main():
             p.wait()
             if p.returncode != 0:
                 write_error(_("unsquashfs_failed", exit_code=p.returncode, output=stdout))
-                raise subprocess.CalledProcessError(p.returncode, cmd, stdout)            
+                raise subprocess.CalledProcessError(p.returncode, cmd, stdout)    
+            
+            run_command(["chmod", "+x", f"{tmpdir}/usr/bin/dpkg"])
+            run_command(["chmod", "+x", f"{tmpdir}/usr/bin/apt"])     
+            # 创建并挂载 proc, sys, dev
+            run_command(["mkdir", "-p", f"{tmpdir}/proc", f"{tmpdir}/sys", f"{tmpdir}/dev"])
+            run_command(["mount", "-t", "proc", "proc", f"{tmpdir}/proc"])
+            run_command(["mount", "-t", "sysfs", "sys", f"{tmpdir}/sys"])
+            run_command(["mount", "--bind", "/dev", f"{tmpdir}/dev"])
+            hostname = 'onenas'
+            run_command(["sh", "-c", f"echo '{hostname}' > {tmpdir}/etc/hostname"])
+            run_command(["sh", "-c", f"echo -e '127.0.1.1\\t{hostname}' >> {tmpdir}/etc/hosts"])
+            run_command(["sh", "-c", f"""cat <<'EOF' > {tmpdir}/etc/apt/sources.list
+deb http://deb.debian.org/debian/ trixie main non-free-firmware contrib
+deb-src http://deb.debian.org/debian/ trixie main non-free-firmware contrib
+
+deb http://deb.debian.org/debian-security trixie-security main non-free-firmware contrib
+deb-src http://deb.debian.org/debian-security/ trixie-security main non-free-firmware contrib
+
+# trixie-updates, to get updates before a point release is made;
+deb http://deb.debian.org/debian trixie-updates main non-free-firmware contrib
+deb-src http://deb.debian.org/debian trixie-updates main non-free-firmware contrib
+EOF"""])
+            run_command(["sh", "-c", f"echo 'REMAKE_INITRD=yes' > {tmpdir}/etc/dkms/zfs.conf"])
+
     else:
         logger.info("Should upgrade here!")
 
