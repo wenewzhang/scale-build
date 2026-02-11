@@ -405,23 +405,26 @@ def main():
                     bootfs = f"{blkid_output} /boot/efi vfat defaults 0 0"
                     run_command(["chroot", tmpdir,"sh", "-c", f"echo {bootfs} >> /etc/fstab"])
                     run_command(["chroot", tmpdir,"mkdir", "-p", "/boot/efi"])
-                    run_command(["chroot", tmpdir, "mount", "/boot/efi"])
-                    is_mount_efi = check_mountpoint_chroot("/boot/efi", tmpdir)
-                    if is_mount_efi:
-                        run_command(["chroot", tmpdir, "mount", "-t", "efivarfs", "efivarfs", "/sys/firmware/efi/efivars"])
+                    try:
+                        run_command(["chroot", tmpdir, "mount", "/boot/efi"])
+                        is_mount_efi = check_mountpoint_chroot("/boot/efi", tmpdir)
+                        if is_mount_efi:
+                            run_command(["chroot", tmpdir, "mount", "-t", "efivarfs", "efivarfs", "/sys/firmware/efi/efivars"])
 
-                        # run_command(["chroot", tmpdir,"mkdir", "-p", "/boot/efi/zbm"])
-                        # run_command(["cp", "-rf", f"/cdrom/scripts/zbm/*", f"{tmpdir}/boot/efi/zbm/."])
-                        shutil.copytree("/cdrom/scripts/zbm", f"{tmpdir}/boot/efi/zbm", dirs_exist_ok=True)
-                        # for disk in disks:
-                        run_command(["chroot", tmpdir, "efibootmgr", "-c",
-                                        "-d", f"/dev/{disk}",
-                                        "-p", "1",
-                                        "-L", "OneNAS[zuti-0.1]",
-                                        "-l", "\zbm\VMLINUZ.EFI"])
-                    else:
-                        logger.error("Can not mount /boot/efi !!!")
-                
+                            # run_command(["chroot", tmpdir,"mkdir", "-p", "/boot/efi/zbm"])
+                            # run_command(["cp", "-rf", f"/cdrom/scripts/zbm/*", f"{tmpdir}/boot/efi/zbm/."])
+                            shutil.copytree("/cdrom/scripts/zbm", f"{tmpdir}/boot/efi/zbm", dirs_exist_ok=True)
+                            # for disk in disks:
+                            run_command(["chroot", tmpdir, "efibootmgr", "-c",
+                                            "-d", f"/dev/{disk}",
+                                            "-p", "1",
+                                            "-L", "OneNAS[zuti-0.1]",
+                                            "-l", "\zbm\VMLINUZ.EFI"])
+                        else:
+                            logger.error("Can not mount /boot/efi !!!")
+                    finally:
+                        run_command(["chroot", tmpdir, "umount", "/boot/efi"])
+
             run_command(["chroot", tmpdir, "sh", "-c", "echo 'root:root' | chpasswd"])
             # run_command(["chroot", tmpdir, "sh", "-c", "sed -i 's|172\\.17\\.0\\.2:3142/||g' /etc/apt/sources.list"])
             run_command(["chroot", tmpdir, "ssh-keygen", "-A"])
