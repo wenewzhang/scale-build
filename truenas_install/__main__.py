@@ -404,11 +404,29 @@ EOF"""])
                     bootfs = f"{blkid_output} /boot/efi vfat defaults 0 0"
                     run_command(["chroot", tmpdir,"sh", "-c", f"echo {bootfs} >> /etc/fstab"])
 
-            run_command(["chroot", tmpdir,"sh", "-c", "mkdir", "-p", "/boot/efi"])
-            run_command(["chroot", tmpdir,"sh", "-c", "mount", "/boot/efi"])
-            check_mountpoint_chroot("/boot/efi", tmpdir)
-          
+                run_command(["chroot", tmpdir,"mkdir", "-p", "/boot/efi"])
+                run_command(["chroot", tmpdir, "mount", "/boot/efi"])
+                is_mount_efi = check_mountpoint_chroot("/boot/efi", tmpdir)
+                if is_mount_efi:
+                    run_command(["chroot", tmpdir, "mount", "-t", "efivarfs", "efivarfs", "/sys/firmware/efi/efivars"])
 
+                    # run_command(["chroot", tmpdir,"mkdir", "-p", "/boot/efi/zbm"])
+                    # run_command(["cp", "-rf", f"/cdrom/scripts/zbm/*", f"{tmpdir}/boot/efi/zbm/."])
+                    shutil.copytree("/cdrom/scripts/zbm", f"{tmpdir}/boot/efi/zbm", dirs_exist_ok=True)
+                    for disk in disks:
+                        run_command([
+                                    "chroot", tmpdir, "efibootmgr", "-c",
+                                    "-d", f"/dev/{disk}",
+                                    "-p", 1,
+                                    "-L", "OneNAS[zuti-0.1]",
+                                    "-l", "\\zbm\\VMLINUZ.EFI"
+                                ])
+                else:
+                    logger.error("Can not mount /boot/efi !!!")
+                
+            run_command(["chroot", tmpdir, "sh", "-c", "echo 'root:root' | chpasswd"])
+            run_command(["chroot", tmpdir, "sh", "-c", "sed -i 's|172\\.17\\.0\\.2:3142/||g' /etc/apt/sources.list"])
+            run_command(["chroot", tmpdir, "ssh-keygen -A"])
     else:
         logger.info("Should upgrade here!")
 
@@ -859,8 +877,9 @@ def check_mountpoint(path):
 
 def check_mountpoint_chroot(path, rpath):
     try:
-        if not os.path.exists(path):
-            logger.warning(f"Check failed: Path '{path}' does not exist.")
+        full_path = os.path.join(rpath, path.lstrip('/'))
+        if not os.path.exists(full_path):
+            logger.warning(f"Check failed: Path '{rpath}', '{path}', '{full_path}' does not exist.")
             return False
 
         result = run_command(["chroot", rpath, "mountpoint", "-q", path])
