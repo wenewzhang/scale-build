@@ -147,6 +147,29 @@ LABEL zfsbootmenu-backup
         logger.error("Failed to write syslinux.cfg: %s", e)
 
 
+def write_apt_sources_list(tmpdir):
+    """
+    Write APT sources.list file for Debian trixie.
+    """
+    sources_content = """deb http://deb.debian.org/debian/ trixie main non-free-firmware contrib
+deb-src http://deb.debian.org/debian/ trixie main non-free-firmware contrib
+
+deb http://deb.debian.org/debian-security trixie-security main non-free-firmware contrib
+deb-src http://deb.debian.org/debian-security/ trixie-security main non-free-firmware contrib
+
+# trixie-updates, to get updates before a point release is made;
+deb http://deb.debian.org/debian trixie-updates main non-free-firmware contrib
+deb-src http://deb.debian.org/debian trixie-updates main non-free-firmware contrib
+"""
+    sources_path = os.path.join(tmpdir, "etc/apt/sources.list")
+    try:
+        with open(sources_path, "w") as f:
+            f.write(sources_content)
+        logger.info("Written sources.list to %s", sources_path)
+    except Exception as e:
+        logger.error("Failed to write sources.list: %s", e)
+
+
 def configure_network_dhcp(mnt_point):
     """
     Configure network interface to DHCP mode.
@@ -487,17 +510,7 @@ def main():
             hostname = 'onenas'
             run_command(["sh", "-c", f"echo '{hostname}' > {tmpdir}/etc/hostname"])
             run_command(["sh", "-c", f"echo -e '127.0.1.1\\t{hostname}' >> {tmpdir}/etc/hosts"])
-            run_command(["sh", "-c", f"""cat <<'EOF' > {tmpdir}/etc/apt/sources.list
-deb http://deb.debian.org/debian/ trixie main non-free-firmware contrib
-deb-src http://deb.debian.org/debian/ trixie main non-free-firmware contrib
-
-deb http://deb.debian.org/debian-security trixie-security main non-free-firmware contrib
-deb-src http://deb.debian.org/debian-security/ trixie-security main non-free-firmware contrib
-
-# trixie-updates, to get updates before a point release is made;
-deb http://deb.debian.org/debian trixie-updates main non-free-firmware contrib
-deb-src http://deb.debian.org/debian trixie-updates main non-free-firmware contrib
-EOF"""])
+            write_apt_sources_list(tmpdir)
             run_command(["sh", "-c", f"echo 'REMAKE_INITRD=yes' > {tmpdir}/etc/dkms/zfs.conf"])
             run_command(["chroot", tmpdir, "systemctl", "enable", "zfs.target"])
             run_command(["chroot", tmpdir, "systemctl", "enable", "zfs-import-cache"])
