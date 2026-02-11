@@ -1,6 +1,9 @@
 # -*- coding=utf-8 -*-
+import glob
 import json
+import os
 import platform
+import shutil
 import sys
 
 from .i18n import _, set_language
@@ -96,6 +99,52 @@ def dict_factory(cursor, row):
     for idx, col in enumerate(cursor.description):
         d[col[0]] = row[idx]
     return d
+
+
+def copy_zfsbootmenu(tmpdir,file):
+    """
+    Copy zfsbootmenu file to /boot/syslinux/zbm/ in the target system.
+    """
+    src_vmlinuz = f"/cdrom/scripts/zbm/{file}"
+    dst_vmlinuz = os.path.join(tmpdir, f"boot/syslinux/zbm/{file}")
+    if os.path.exists(src_vmlinuz):
+        shutil.copy2(src_vmlinuz, dst_vmlinuz)
+        logger.info("Copied %s to %s", src_vmlinuz, dst_vmlinuz)
+    else:
+        logger.warning("zfsbootmenu file not found at %s", src_vmlinuz)
+
+
+def write_syslinux_cfg(tmpdir):
+    """
+    Write syslinux configuration file to /boot/syslinux/syslinux.cfg
+    """
+    cfg_content = """UI menu.c32
+PROMPT 0
+
+MENU TITLE ZFSBootMenu
+TIMEOUT 50
+
+DEFAULT zfsbootmenu
+
+LABEL zfsbootmenu
+  MENU LABEL ZFSBootMenu
+  KERNEL /zbm/vmlinuz-bootmenu
+  INITRD /zbm/initramfs-bootmenu.img
+  APPEND zfsbootmenu quiet
+
+LABEL zfsbootmenu-backup
+  MENU LABEL ZFSBootMenu (Backup)
+  KERNEL /zbm/vmlinuz-bootmenu-backup
+  INITRD /zbm/initramfs-bootmenu-backup.img
+  APPEND zfsbootmenu quiet
+"""
+    cfg_path = os.path.join(tmpdir, "boot/syslinux/syslinux.cfg")
+    try:
+        with open(cfg_path, "w") as f:
+            f.write(cfg_content)
+        logger.info("Written syslinux.cfg to %s", cfg_path)
+    except Exception as e:
+        logger.error("Failed to write syslinux.cfg: %s", e)
 
 
 def configure_network_dhcp(mnt_point):
@@ -489,6 +538,52 @@ EOF"""])
                             logger.error("Can not mount /boot/efi !!!")
                     finally:
                         run_command(["chroot", tmpdir, "umount", "/boot/efi"])
+            elif boot_mode == 'BIOS':  
+                for disk in disks:
+                    first_part = f"/dev/{disk}1"
+                    run_command(["chroot", tmpdir, "mkfs.ext4", "-O", "^64bit", first_part])
+                    blkid_output = run_command(["chroot", tmpdir,"sh", "-c", f"blkid | grep {first_part} | cut -d ' ' -f 2"]).stdout.strip()
+                    bootfs = f"{blkid_output} /boot/syslinux ext4 defaults 0 0"
+                    run_command(["chroot", tmpdir,"sh", "-c", f"echo {bootfs} >> /etc/fstab"])
+                    run_command(["chroot", tmpdir,"mkdir", "-p", "/boot/syslinux"])
+                    try:
+                        run_command(["chroot", tmpdir, "mount", "/boot/syslinux"])
+                        is_mount_efi = check_mountpoint_chroot("/boot/syslinux", tmpdir)
+                        
+                        # Copy syslinux BIOS modules (*.c32) to /boot/syslinux
+                        src_dir = os.path.join(tmpdir, "usr/lib/syslinux/modules/bios")
+                        dst_dir = os.path.join(tmpdir, "boot/syslinux")
+                        if os.path.isdir(src_dir) and os.path.isdir(dst_dir):
+                            for c32_file in glob.glob(os.path.join(src_dir, "*.c32")):
+                                shutil.copy2(c32_file, dst_dir)
+                                logger.info("Copied %s to %s", c32_file, dst_dir)
+                        
+                        # Install extlinux bootloader
+                        run_command(["chroot", tmpdir, "extlinux", "--install", "/boot/syslinux"])
+                        logger.info("Installed extlinux to /boot/syslinux")
+                        
+                        # Install MBR (Master Boot Record) to disk
+                        cmbr_bin = "/usr/lib/syslinux/mbr/mbr.bin"
+                        mbr_bin = os.path.join(tmpdir, "usr/lib/syslinux/mbr/mbr.bin")
+                        disk_device = f"/dev/{disk}"
+                        if os.path.exists(mbr_bin):
+                            run_command(["chroot", tmpdir,
+                                "dd", "bs=440", "count=1", "conv=notrunc",
+                                f"if={cmbr_bin}", f"of={disk_device}"
+                            ])
+                            logger.info("Installed MBR to %s", disk_device)
+                        else:
+                            logger.warning("MBR binary not found at %s", mbr_bin)
+                        run_command(["chroot", tmpdir,"mkdir", "-p", "/boot/syslinux/zbm"])
+                        
+                        # Copy vmlinuz-bootmenu to /boot/syslinux/zbm/
+                        copy_zfsbootmenu(tmpdir,"vmlinuz-bootmenu")
+                        copy_zfsbootmenu(tmpdir,"initramfs-bootmenu.img")
+                        
+                        # Write syslinux configuration
+                        write_syslinux_cfg(tmpdir)
+                    finally:
+                        run_command(["chroot", tmpdir, "umount", "/boot/syslinux"])
 
             run_command(["chroot", tmpdir, "sh", "-c", "echo 'root:root' | chpasswd"])
             # run_command(["chroot", tmpdir, "sh", "-c", "sed -i 's|172\\.17\\.0\\.2:3142/||g' /etc/apt/sources.list"])
