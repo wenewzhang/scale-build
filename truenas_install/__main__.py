@@ -319,7 +319,7 @@ def main():
         run_command(["udevadm", "trigger"])        
         
         tmpdir= '/mnt/a'
-        run_command(["mdir", "-p", tmpdir])
+        run_command(["mkdir", "-p", tmpdir])
 
         run_command(["zfs", "create", "-o", "canmount=noauto", "-o", f"mountpoint={tmpdir}", f"{dataset_name}"])
         run_command(["zpool", "set", f"bootfs={dataset_name}", pool_name])   
