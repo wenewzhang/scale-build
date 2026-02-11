@@ -98,6 +98,71 @@ def dict_factory(cursor, row):
     return d
 
 
+def configure_network_dhcp(mnt_point):
+    """
+    Configure network interface to DHCP mode.
+    Equivalent to scripts/network-setting.sh functionality.
+    """
+    import shutil
+    
+    # Get the first active network interface name from default route
+    try:
+        result = run_command(["ip", "route", "show", "default"], check=False)
+        logger.info("ip route show default: %s", result)
+        interface = None
+        if result.returncode == 0 and result.stdout:
+            for line in result.stdout.strip().split('\n'):
+                parts = line.split()
+                if 'dev' in parts:
+                    idx = parts.index('dev')
+                    if idx + 1 < len(parts):
+                        interface = parts[idx + 1]
+                        break
+        
+        if not interface:
+            logger.warning("No active network interface found with default route")
+            return
+        
+        logger.info("Found network interface: %s", interface)
+    except Exception as e:
+        logger.warning("Failed to get network interface: %s", e)
+        return
+    
+    # Backup current configuration
+    interfaces_file = os.path.join(mnt_point, "etc/network/interfaces")
+    backup_file = interfaces_file + ".bak"
+    
+    try:
+        if os.path.exists(interfaces_file):
+            shutil.copy2(interfaces_file, backup_file)
+            logger.info("Backed up %s to %s", interfaces_file, backup_file)
+    except Exception as e:
+        logger.warning("Failed to backup interfaces file: %s", e)
+    
+    # Set to DHCP mode
+    interfaces_config = f"""# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# The primary network interface
+auto {interface}
+iface {interface} inet dhcp
+"""
+    
+    try:
+        os.makedirs(os.path.dirname(interfaces_file), exist_ok=True)
+        with open(interfaces_file, 'w') as f:
+            f.write(interfaces_config)
+        logger.info("Set %s to DHCP mode", interface)
+    except Exception as e:
+        logger.warning("Failed to write interfaces file: %s", e)
+
+
 def query_row(query, database_path, prefix=None):
     database_path = database_path
     conn = sqlite3.connect(database_path)
@@ -374,16 +439,16 @@ def main():
             run_command(["sh", "-c", f"echo '{hostname}' > {tmpdir}/etc/hostname"])
             run_command(["sh", "-c", f"echo -e '127.0.1.1\\t{hostname}' >> {tmpdir}/etc/hosts"])
             run_command(["sh", "-c", f"""cat <<'EOF' > {tmpdir}/etc/apt/sources.list
-    deb http://deb.debian.org/debian/ trixie main non-free-firmware contrib
-    deb-src http://deb.debian.org/debian/ trixie main non-free-firmware contrib
+deb http://deb.debian.org/debian/ trixie main non-free-firmware contrib
+deb-src http://deb.debian.org/debian/ trixie main non-free-firmware contrib
 
-    deb http://deb.debian.org/debian-security trixie-security main non-free-firmware contrib
-    deb-src http://deb.debian.org/debian-security/ trixie-security main non-free-firmware contrib
+deb http://deb.debian.org/debian-security trixie-security main non-free-firmware contrib
+deb-src http://deb.debian.org/debian-security/ trixie-security main non-free-firmware contrib
 
-    # trixie-updates, to get updates before a point release is made;
-    deb http://deb.debian.org/debian trixie-updates main non-free-firmware contrib
-    deb-src http://deb.debian.org/debian trixie-updates main non-free-firmware contrib
-    EOF"""])
+# trixie-updates, to get updates before a point release is made;
+deb http://deb.debian.org/debian trixie-updates main non-free-firmware contrib
+deb-src http://deb.debian.org/debian trixie-updates main non-free-firmware contrib
+EOF"""])
             run_command(["sh", "-c", f"echo 'REMAKE_INITRD=yes' > {tmpdir}/etc/dkms/zfs.conf"])
             run_command(["chroot", tmpdir, "systemctl", "enable", "zfs.target"])
             run_command(["chroot", tmpdir, "systemctl", "enable", "zfs-import-cache"])
@@ -428,6 +493,7 @@ def main():
             run_command(["chroot", tmpdir, "sh", "-c", "echo 'root:root' | chpasswd"])
             # run_command(["chroot", tmpdir, "sh", "-c", "sed -i 's|172\\.17\\.0\\.2:3142/||g' /etc/apt/sources.list"])
             run_command(["chroot", tmpdir, "ssh-keygen", "-A"])
+            configure_network_dhcp(tmpdir)
         finally:
             run_command(["umount", "-R", tmpdir])
     else:
