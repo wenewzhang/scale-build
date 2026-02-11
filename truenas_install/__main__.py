@@ -424,7 +424,7 @@ EOF"""])
             
         run_command(["chroot", tmpdir, "sh", "-c", "echo 'root:root' | chpasswd"])
         # run_command(["chroot", tmpdir, "sh", "-c", "sed -i 's|172\\.17\\.0\\.2:3142/||g' /etc/apt/sources.list"])
-        run_command(["chroot", tmpdir, "ssh-keygen -A"])
+        run_command(["chroot", tmpdir, "ssh-keygen", "-A"])
     else:
         logger.info("Should upgrade here!")
 
