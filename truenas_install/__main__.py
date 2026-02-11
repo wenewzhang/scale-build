@@ -317,114 +317,116 @@ def main():
                 
         # run_command(["zfs", "create", "-o", "mountpoint=none", f"{pool_name}/ROOT"])     
         run_command(["udevadm", "trigger"])        
-        
-        tmpdir= '/mnt/a'
-        run_command(["mkdir", "-p", tmpdir])
+        try:
+            tmpdir= '/mnt/a'
+            run_command(["mkdir", "-p", tmpdir])
 
-        run_command(["zfs", "create", "-o", "canmount=noauto", "-o", f"mountpoint={tmpdir}", f"{dataset_name}"])
-        run_command(["zpool", "set", f"bootfs={dataset_name}", pool_name])   
-        # run_command(["mkdir", "-p", tmpdir])
-        # run_command(["mount", "-t", "zfs", dataset_name, tmpdir])          
-        run_command(["zpool", "export", "-f", pool_name])
-        run_command(["zpool", "import", pool_name])
-        run_command(["zfs", "mount", dataset_name])   
-        # run_command(["zpool", "import", "-R", f"{tmpdir}", pool_name])
+            run_command(["zfs", "create", "-o", "canmount=noauto", "-o", f"mountpoint=/", f"{dataset_name}"])
+            run_command(["zpool", "set", f"bootfs={dataset_name}", pool_name])   
+            # run_command(["mkdir", "-p", tmpdir])
+            # run_command(["mount", "-t", "zfs", dataset_name, tmpdir])          
+            run_command(["zpool", "export", "-f", pool_name])
+            run_command(["zpool", "import", "-f", "-R", tmpdir, pool_name])
+            run_command(["zfs", "mount", dataset_name])   
+            # run_command(["zpool", "import", "-R", f"{tmpdir}", pool_name])
 
-        check_mountpoint(tmpdir)
-        
-        cmd = [
-            "unsquashfs",
-            "-d", tmpdir,
-            "-f",
-            "-da", "16",
-            "-fr", "16",
-            # "-exclude-file", exclude_list_file.name,
-            os.path.join(src, "rootfs.squashfs"),
-        ]
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        stdout = ""
-        buffer = b""
-        for char in iter(lambda: p.stdout.read(1), b""):
-            buffer += char
-            if char == b"\n":
-                stdout += buffer.decode("utf-8", "ignore")
-                buffer = b""
-
-            if buffer and buffer[0:1] == b"\r" and buffer[-1:] == b"%":
-                if m := RE_UNSQUASHFS_PROGRESS.match(buffer[1:].decode("utf-8", "ignore")):
-                    write_progress(
-                        int(m.group("extracted")) / int(m.group("total")) * 0.5,
-                        _("extracting"),
-                    )
+            check_mountpoint(tmpdir)
+            
+            cmd = [
+                "unsquashfs",
+                "-d", tmpdir,
+                "-f",
+                "-da", "16",
+                "-fr", "16",
+                # "-exclude-file", exclude_list_file.name,
+                os.path.join(src, "rootfs.squashfs"),
+            ]
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            stdout = ""
+            buffer = b""
+            for char in iter(lambda: p.stdout.read(1), b""):
+                buffer += char
+                if char == b"\n":
+                    stdout += buffer.decode("utf-8", "ignore")
                     buffer = b""
 
-        p.wait()
-        if p.returncode != 0:
-            write_error(_("unsquashfs_failed", exit_code=p.returncode, output=stdout))
-            raise subprocess.CalledProcessError(p.returncode, cmd, stdout)    
-        
-        run_command(["chmod", "+x", f"{tmpdir}/usr/bin/dpkg"])
-        run_command(["chmod", "+x", f"{tmpdir}/usr/bin/apt"])     
-        # 创建并挂载 proc, sys, dev
-        run_command(["mkdir", "-p", f"{tmpdir}/proc", f"{tmpdir}/sys", f"{tmpdir}/dev"])
-        run_command(["mount", "-t", "proc", "proc", f"{tmpdir}/proc"])
-        run_command(["mount", "-t", "sysfs", "sys", f"{tmpdir}/sys"])
-        run_command(["mount", "--bind", "/dev", f"{tmpdir}/dev"])
-        hostname = 'onenas'
-        run_command(["sh", "-c", f"echo '{hostname}' > {tmpdir}/etc/hostname"])
-        run_command(["sh", "-c", f"echo -e '127.0.1.1\\t{hostname}' >> {tmpdir}/etc/hosts"])
-        run_command(["sh", "-c", f"""cat <<'EOF' > {tmpdir}/etc/apt/sources.list
-deb http://deb.debian.org/debian/ trixie main non-free-firmware contrib
-deb-src http://deb.debian.org/debian/ trixie main non-free-firmware contrib
+                if buffer and buffer[0:1] == b"\r" and buffer[-1:] == b"%":
+                    if m := RE_UNSQUASHFS_PROGRESS.match(buffer[1:].decode("utf-8", "ignore")):
+                        write_progress(
+                            int(m.group("extracted")) / int(m.group("total")) * 0.5,
+                            _("extracting"),
+                        )
+                        buffer = b""
 
-deb http://deb.debian.org/debian-security trixie-security main non-free-firmware contrib
-deb-src http://deb.debian.org/debian-security/ trixie-security main non-free-firmware contrib
-
-# trixie-updates, to get updates before a point release is made;
-deb http://deb.debian.org/debian trixie-updates main non-free-firmware contrib
-deb-src http://deb.debian.org/debian trixie-updates main non-free-firmware contrib
-EOF"""])
-        run_command(["sh", "-c", f"echo 'REMAKE_INITRD=yes' > {tmpdir}/etc/dkms/zfs.conf"])
-        run_command(["chroot", tmpdir, "systemctl", "enable", "zfs.target"])
-        run_command(["chroot", tmpdir, "systemctl", "enable", "zfs-import-cache"])
-        run_command(["chroot", tmpdir, "systemctl", "enable", "zfs-mount"])
-        run_command(["chroot", tmpdir, "systemctl", "enable", "zfs-import.target"])
-        run_command(["chroot", tmpdir, "systemctl", "enable", "systemd-resolved"])
-        run_command(["chroot", tmpdir, "systemctl", "enable", "systemd-networkd"])
-        # run_command(["chroot", tmpdir, "dpkg-reconfigure", "locales"])
-        # run_command(["chroot", tmpdir, "dpkg-reconfigure", "tzdata"])
-        # run_command(["chroot", tmpdir, "dpkg-reconfigure", "keyboard-configuration"])
-        # run_command(["chroot", tmpdir, "dpkg-reconfigure", "console-setup"])
-        run_command(["chroot", tmpdir, "update-initramfs", "-c", "-k", "all"])
-        run_command(["chroot", tmpdir, "zfs", "set", f"org.zfsbootmenu:commandline=quiet", f"{pool_name}/ROOT"])
-        if boot_mode == 'UEFI':                
-            for disk in disks:
-                first_part = f"/dev/{disk}1"
-                run_command(["chroot", tmpdir, "mkfs.vfat", "-F32", first_part])
-                blkid_output = run_command(["chroot", tmpdir,"sh", "-c", f"blkid | grep {first_part} | cut -d ' ' -f 2"]).stdout.strip()
-                bootfs = f"{blkid_output} /boot/efi vfat defaults 0 0"
-                run_command(["chroot", tmpdir,"sh", "-c", f"echo {bootfs} >> /etc/fstab"])
-                run_command(["chroot", tmpdir,"mkdir", "-p", "/boot/efi"])
-                run_command(["chroot", tmpdir, "mount", "/boot/efi"])
-                is_mount_efi = check_mountpoint_chroot("/boot/efi", tmpdir)
-                if is_mount_efi:
-                    run_command(["chroot", tmpdir, "mount", "-t", "efivarfs", "efivarfs", "/sys/firmware/efi/efivars"])
-
-                    # run_command(["chroot", tmpdir,"mkdir", "-p", "/boot/efi/zbm"])
-                    # run_command(["cp", "-rf", f"/cdrom/scripts/zbm/*", f"{tmpdir}/boot/efi/zbm/."])
-                    shutil.copytree("/cdrom/scripts/zbm", f"{tmpdir}/boot/efi/zbm", dirs_exist_ok=True)
-                    # for disk in disks:
-                    run_command(["chroot", tmpdir, "efibootmgr", "-c",
-                                    "-d", f"/dev/{disk}",
-                                    "-p", "1",
-                                    "-L", "OneNAS[zuti-0.1]",
-                                    "-l", "\zbm\VMLINUZ.EFI"])
-                else:
-                    logger.error("Can not mount /boot/efi !!!")
+            p.wait()
+            if p.returncode != 0:
+                write_error(_("unsquashfs_failed", exit_code=p.returncode, output=stdout))
+                raise subprocess.CalledProcessError(p.returncode, cmd, stdout)    
             
-        run_command(["chroot", tmpdir, "sh", "-c", "echo 'root:root' | chpasswd"])
-        # run_command(["chroot", tmpdir, "sh", "-c", "sed -i 's|172\\.17\\.0\\.2:3142/||g' /etc/apt/sources.list"])
-        run_command(["chroot", tmpdir, "ssh-keygen", "-A"])
+            run_command(["chmod", "+x", f"{tmpdir}/usr/bin/dpkg"])
+            run_command(["chmod", "+x", f"{tmpdir}/usr/bin/apt"])     
+            # 创建并挂载 proc, sys, dev
+            run_command(["mkdir", "-p", f"{tmpdir}/proc", f"{tmpdir}/sys", f"{tmpdir}/dev"])
+            run_command(["mount", "-t", "proc", "proc", f"{tmpdir}/proc"])
+            run_command(["mount", "-t", "sysfs", "sys", f"{tmpdir}/sys"])
+            run_command(["mount", "--bind", "/dev", f"{tmpdir}/dev"])
+            hostname = 'onenas'
+            run_command(["sh", "-c", f"echo '{hostname}' > {tmpdir}/etc/hostname"])
+            run_command(["sh", "-c", f"echo -e '127.0.1.1\\t{hostname}' >> {tmpdir}/etc/hosts"])
+            run_command(["sh", "-c", f"""cat <<'EOF' > {tmpdir}/etc/apt/sources.list
+    deb http://deb.debian.org/debian/ trixie main non-free-firmware contrib
+    deb-src http://deb.debian.org/debian/ trixie main non-free-firmware contrib
+
+    deb http://deb.debian.org/debian-security trixie-security main non-free-firmware contrib
+    deb-src http://deb.debian.org/debian-security/ trixie-security main non-free-firmware contrib
+
+    # trixie-updates, to get updates before a point release is made;
+    deb http://deb.debian.org/debian trixie-updates main non-free-firmware contrib
+    deb-src http://deb.debian.org/debian trixie-updates main non-free-firmware contrib
+    EOF"""])
+            run_command(["sh", "-c", f"echo 'REMAKE_INITRD=yes' > {tmpdir}/etc/dkms/zfs.conf"])
+            run_command(["chroot", tmpdir, "systemctl", "enable", "zfs.target"])
+            run_command(["chroot", tmpdir, "systemctl", "enable", "zfs-import-cache"])
+            run_command(["chroot", tmpdir, "systemctl", "enable", "zfs-mount"])
+            run_command(["chroot", tmpdir, "systemctl", "enable", "zfs-import.target"])
+            run_command(["chroot", tmpdir, "systemctl", "enable", "systemd-resolved"])
+            run_command(["chroot", tmpdir, "systemctl", "enable", "systemd-networkd"])
+            # run_command(["chroot", tmpdir, "dpkg-reconfigure", "locales"])
+            # run_command(["chroot", tmpdir, "dpkg-reconfigure", "tzdata"])
+            # run_command(["chroot", tmpdir, "dpkg-reconfigure", "keyboard-configuration"])
+            # run_command(["chroot", tmpdir, "dpkg-reconfigure", "console-setup"])
+            run_command(["chroot", tmpdir, "update-initramfs", "-c", "-k", "all"])
+            run_command(["chroot", tmpdir, "zfs", "set", f"org.zfsbootmenu:commandline=quiet", f"{pool_name}/ROOT"])
+            if boot_mode == 'UEFI':                
+                for disk in disks:
+                    first_part = f"/dev/{disk}1"
+                    run_command(["chroot", tmpdir, "mkfs.vfat", "-F32", first_part])
+                    blkid_output = run_command(["chroot", tmpdir,"sh", "-c", f"blkid | grep {first_part} | cut -d ' ' -f 2"]).stdout.strip()
+                    bootfs = f"{blkid_output} /boot/efi vfat defaults 0 0"
+                    run_command(["chroot", tmpdir,"sh", "-c", f"echo {bootfs} >> /etc/fstab"])
+                    run_command(["chroot", tmpdir,"mkdir", "-p", "/boot/efi"])
+                    run_command(["chroot", tmpdir, "mount", "/boot/efi"])
+                    is_mount_efi = check_mountpoint_chroot("/boot/efi", tmpdir)
+                    if is_mount_efi:
+                        run_command(["chroot", tmpdir, "mount", "-t", "efivarfs", "efivarfs", "/sys/firmware/efi/efivars"])
+
+                        # run_command(["chroot", tmpdir,"mkdir", "-p", "/boot/efi/zbm"])
+                        # run_command(["cp", "-rf", f"/cdrom/scripts/zbm/*", f"{tmpdir}/boot/efi/zbm/."])
+                        shutil.copytree("/cdrom/scripts/zbm", f"{tmpdir}/boot/efi/zbm", dirs_exist_ok=True)
+                        # for disk in disks:
+                        run_command(["chroot", tmpdir, "efibootmgr", "-c",
+                                        "-d", f"/dev/{disk}",
+                                        "-p", "1",
+                                        "-L", "OneNAS[zuti-0.1]",
+                                        "-l", "\zbm\VMLINUZ.EFI"])
+                    else:
+                        logger.error("Can not mount /boot/efi !!!")
+                
+            run_command(["chroot", tmpdir, "sh", "-c", "echo 'root:root' | chpasswd"])
+            # run_command(["chroot", tmpdir, "sh", "-c", "sed -i 's|172\\.17\\.0\\.2:3142/||g' /etc/apt/sources.list"])
+            run_command(["chroot", tmpdir, "ssh-keygen", "-A"])
+        finally:
+            run_command(["umount", "-R", tmpdir])
     else:
         logger.info("Should upgrade here!")
 
